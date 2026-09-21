@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vellum test workspace</title>
+  <link rel="stylesheet" href="/fixture.css">
+</head>
+<body>
+  <header><strong>Workspace</strong><nav>Overview &nbsp; Projects &nbsp; Settings</nav></header>
+  <main>
+    <p class="eyebrow">DESIGN REVIEW</p>
+    <h1>A clearer way to review.</h1>
+    <p class="intro">Select an element, capture your feedback, and copy the context when you are ready.</p>
+    <section class="panel" aria-label="Project overview">
+      <h2>Website refresh</h2>
+      <p>Review the spacing, content, and interaction details.</p>
+      <button id="target" data-testid="review-action">Review project</button>
+      <p id="click-count">Host clicks: 0</p>
+    </section>
+    <label>Project name <input id="host-input" placeholder="Type without triggering shortcuts"></label>
+    <button id="navigate">Change page</button>
+    <button id="host-popover-trigger" popovertarget="host-popover">Host popover</button>
+    <div id="host-popover" popover>Host page content</div>
+  </main>
+  <script src="/fixture.js"></script>
+</body>
+</html>

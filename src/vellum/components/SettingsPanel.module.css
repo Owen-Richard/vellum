@@ -1,0 +1,128 @@
+
+
+.panel {
+  position: fixed;
+  inset: auto;
+  margin: 8px;
+  padding: 4px;
+
+  min-width: 202px;
+  width: fit-content;
+  border-radius: var(--vellum-radius);
+  border: 1px solid var(--vellum-border);
+  background: var(--vellum-bg);
+  box-shadow: var(--vellum-shadow);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+
+  /* reset popover defaults */
+  overflow: visible;
+}
+
+.inner {
+  width: 194px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.innerHotkeys {
+  width: 224px;
+  padding: 4px 0 6px 0;
+  gap: 8px;
+}
+
+.sectionTitle {
+  color: var(--vellum-text-muted);
+  font-size: var(--vellum-font-size);
+  padding-left: 6px;
+  line-height: 20px;
+}
+
+/* Header row */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.themeButton {
+  gap: 6px;
+  min-height: 22px;
+}
+
+.settingLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--vellum-text);
+  font-size: var(--vellum-font-size);
+}
+
+.settingMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.helpIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--vellum-text-muted);
+  cursor: help;
+}
+
+/* Hotkeys link */
+.hotkeyLink {
+  justify-content: space-between;
+  padding: 4px 6px;
+}
+
+/* Hotkeys view */
+.backButton {
+  gap: 4px;
+  padding-left: 6px;
+}
+
+.hotkeyList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hotkeyRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 6px;
+}
+
+.hotkeyInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 160px;
+}
+
+.hotkeyLabel {
+  color: var(--vellum-text);
+  font-size: var(--vellum-font-size);
+  line-height: 1.4;
+}
+
+.hotkeyHint {
+  color: var(--vellum-text-muted);
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.checkboxesGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -1,0 +1,101 @@
+
+
+.panel {
+  padding: 8px 14px;
+}
+
+.empty {
+  color: var(--vellum-text-muted);
+  font-style: italic;
+  padding: 12px;
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 12px;
+}
+
+.sectionHeader {
+  font-size: var(--vellum-font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--vellum-text-muted);
+  margin-bottom: 4px;
+}
+
+.componentName {
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-accent);
+  overflow-wrap: break-word;
+}
+
+.elementName {
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text-bright);
+  overflow-wrap: break-word;
+}
+
+.elementClasses {
+  color: var(--vellum-text-muted);
+}
+
+.elementList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.elementListItem {
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text);
+  padding: 2px 0;
+  overflow-wrap: break-word;
+}
+
+.componentListItem {
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-accent);
+  padding: 2px 0;
+  overflow-wrap: break-word;
+}
+
+.stylesTabs {
+  justify-self: start;
+  margin-bottom: 6px;
+}
+
+.stylesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.stylesHeader .stylesTabs {
+  margin-bottom: 0;
+}
+
+.stylesHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Overrides on top of the common Textarea: monospace for CSS editing, a
+   tall fixed height so the editor fills the panel, and `pre` whitespace so
+   long selectors don't wrap. Border, background, padding, and focus styles
+   come from the shared `.textarea` rule in common/Input.module.css. */
+.stylesTextarea {
+  height: 2000px;
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text);
+  overflow: auto;
+  white-space: pre;
+}

@@ -1,0 +1,10 @@
+.popoverTop {
+  position-area: top;
+  position-try-fallbacks: bottom;
+}
+
+.popoverBottom {
+  position-area: bottom;
+  position-try-fallbacks: top;
+}
+

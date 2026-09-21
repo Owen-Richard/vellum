@@ -1,0 +1,34 @@
+
+.track,
+.trackActive {
+  position: relative;
+  width: 24px;
+  height: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color var(--vellum-transition);
+}
+
+.track {
+  background: var(--vellum-border);
+}
+
+.trackActive {
+  background: var(--vellum-accent);
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--vellum-text-muted);
+  transition: transform var(--vellum-transition);
+}
+
+.trackActive .knob {
+  transform: translateX(8px);
+  background: var(--vellum-text-on-color);
+}

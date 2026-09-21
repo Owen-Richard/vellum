@@ -1,0 +1,33 @@
+
+.badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  background: var(--vellum-accent);
+  border-radius: var(--vellum-radius);
+  color: var(--vellum-text-on-color);
+  font-family: var(--vellum-font-ui);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
+
+/* Inline index badge (sidebar annotation list) */
+.index {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+}

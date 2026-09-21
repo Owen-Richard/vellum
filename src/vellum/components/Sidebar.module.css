@@ -1,0 +1,62 @@
+.sidebar {
+  height: 100vh;
+  width: var(--vellum-sidebar-width, 400px);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: var(--vellum-z-sidebar);
+  background: var(--vellum-bg);
+  border-left: 1px solid var(--vellum-border-subtle);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+  font-family: var(--vellum-font-ui);
+}
+
+.tabs {
+  padding: 8px 8px;
+}
+
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  background: var(--vellum-bg-inset);
+  border-radius: var(--vellum-radius);
+  width: fit-content;
+}
+
+.tab {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: var(--vellum-radius-md);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+  font-weight: 500;
+  color: var(--vellum-text-bright);
+  transition: background-color var(--vellum-transition);
+}
+
+.tab:hover {
+  background: var(--vellum-bg-hover);
+}
+
+.tabActive {
+  background: var(--vellum-bg-raised);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.bodyFlex {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

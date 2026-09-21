@@ -1,0 +1,129 @@
+:root {
+  /* surfaces */
+  --vellum-bg: oklch(20.5% 0 none);
+  --vellum-bg-hover: oklch(26.9% 0 none);
+  --vellum-bg-elevated: oklch(23.5% 0 none);
+  --vellum-bg-input: oklch(14.5% 0 none);
+  --vellum-border: oklch(37.2% 0 none);
+  --vellum-bg-inset: oklch(17.8% 0 none);
+  --vellum-bg-raised: oklch(29.7% 0 none);
+  --vellum-border-subtle: oklch(28.5% 0 none);
+
+  /* overlays (white-alpha on dark backgrounds) */
+  --vellum-overlay-faint: oklch(100% 0 none / 0.05);
+  --vellum-overlay-subtle: oklch(100% 0 none / 0.08);
+  --vellum-overlay: oklch(100% 0 none / 0.1);
+  --vellum-overlay-ring: oklch(100% 0 none / 0.3);
+
+  /* text */
+  --vellum-text-bright: oklch(95% 0 none);
+  --vellum-text: oklch(85% 0 none);
+  --vellum-text-muted: oklch(75% 0 none);
+  --vellum-text-on-color: oklch(100% 0 none); 
+  --vellum-text-invert: oklch(10% 0 none);
+
+  /* typography */
+  --vellum-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+  --vellum-font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace;
+  --vellum-font-size-lg:px;
+  --vellum-font-size: 12px;
+  --vellum-font-size-sm: 11px;
+  --vellum-font-ui: system-ui, sans-serif;
+
+  /* radii */
+  --vellum-radius-lg: 10px;
+  --vellum-radius: 8px;
+  --vellum-radius-md: 6px;
+  --vellum-radius-sm: 4px;
+  --vellum-radius-xs: 2px;
+
+  /* shadows */
+  --vellum-shadow: 0 20px 25px -5px oklch(0% 0 none / 0.3), 0 8px 10px -6px oklch(0% 0 none / 0.3);
+  --vellum-shadow-sm: 0 1px 3px oklch(0% 0 none / 0.4);
+  --vellum-shadow-dropdown: 0 8px 16px oklch(0% 0 none / 0.4);
+  --vellum-shadow-md: 0 4px 16px oklch(0% 0 none / 0.5);
+
+  /* accent */
+  --vellum-accent: oklch(62.3% 0.19 259.8);
+  --vellum-accent-hover: oklch(54.6% 0.22 262.9);
+  --vellum-accent-alpha: oklch(62.3% 0.19 259.8 / 0.1);
+
+  /* danger */
+  --vellum-danger: oklch(63.7% 0.21 25.3);
+  --vellum-danger-alpha: oklch(63.7% 0.21 25.3 / 0.1);
+
+  /* success */
+  --vellum-success: oklch(72.3% 0.19 149.6);
+  --vellum-success-alpha: oklch(72.3% 0.19 149.6 / 0.1);
+
+  /* transitions */
+  --vellum-transition: 150ms;
+
+  /* sidebar */
+  --vellum-sidebar-width: 400px;
+  
+  /* z-index layering within VellumLayer */
+  --vellum-z-sidebar: 1;
+  --vellum-z-highlight: 1;
+  --vellum-z-hover-label: 2;
+  --vellum-z-dots: 3;
+  --vellum-z-annotation-popover: 4;
+  --vellum-z-toolbar: 5;
+  --vellum-z-popover: 6;
+
+  /* scrollbar */
+  --vellum-scrollbar-size: 6px;
+  --vellum-scrollbar-track: transparent;
+  --vellum-scrollbar-thumb: oklch(37.2% 0 none);
+  --vellum-scrollbar-thumb-hover: oklch(43.9% 0 none);
+}
+
+/* Light theme overrides */
+[data-vellum-theme='light'] {
+  /* surfaces */
+  --vellum-bg: oklch(100% 0 none);
+  --vellum-bg-hover: oklch(97.0% 0 none);
+  --vellum-bg-elevated: oklch(98.5% 0 none);
+  --vellum-bg-input: oklch(95.5% 0 none);
+  --vellum-border: oklch(90.7% 0 none);
+  --vellum-bg-inset: oklch(92.2% 0 none);
+  --vellum-bg-raised: oklch(95.5% 0 none);
+  --vellum-border-subtle: oklch(85.8% 0 none);
+
+  /* overlays (black-alpha on light backgrounds) */
+  --vellum-overlay-faint: oklch(0% 0 none / 0.03);
+  --vellum-overlay-subtle: oklch(0% 0 none / 0.05);
+  --vellum-overlay: oklch(0% 0 none / 0.08);
+  --vellum-overlay-ring: oklch(0% 0 none / 0.2);
+
+  /* text */
+  --vellum-text-bright: oklch(10% 0 none);
+  --vellum-text: oklch(25% 0 none);
+  --vellum-text-muted: oklch(40% 0 none);
+  --vellum-text-invert: oklch(100% 0 none);
+
+  /* shadows */
+  --vellum-shadow: 0 20px 25px -5px oklch(0% 0 none / 0.08), 0 8px 10px -6px oklch(0% 0 none / 0.06);
+  --vellum-shadow-sm: 0 1px 3px oklch(0% 0 none / 0.1);
+  --vellum-shadow-dropdown: 0 8px 16px oklch(0% 0 none / 0.1);
+  --vellum-shadow-md: 0 4px 16px oklch(0% 0 none / 0.12);
+
+  /* accent (same hue, slightly adjusted alpha for light bg) */
+  --vellum-accent-alpha: oklch(62.3% 0.19 259.8 / 0.08);
+
+  /* danger */
+  --vellum-danger-alpha: oklch(63.7% 0.21 25.3 / 0.08);
+
+  /* success */
+  --vellum-success-alpha: oklch(72.3% 0.19 149.6 / 0.08);
+
+  /* scrollbar */
+  --vellum-scrollbar-thumb: oklch(87.0% 0 none);
+  --vellum-scrollbar-thumb-hover: oklch(71.6% 0 none);
+}
+
+/* Dark thin scrollbar for all Vellum UI */
+[data-vellum] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--vellum-scrollbar-thumb) var(--vellum-scrollbar-track);
+}

@@ -1,0 +1,46 @@
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 6px;
+  border-radius: var(--vellum-radius-sm);
+  transition: background-color var(--vellum-transition);
+  cursor: pointer;
+}
+
+.row:hover,
+.row:focus-visible {
+  background: var(--vellum-bg-hover);
+}
+
+.row:focus-visible {
+  outline: none;
+}
+
+.box,
+.boxChecked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--vellum-radius-xs);
+  cursor: pointer;
+  transition:
+    background-color var(--vellum-transition),
+    border-color var(--vellum-transition),
+    color var(--vellum-transition);
+  flex-shrink: 0;
+}
+
+.box {
+  border: 1px solid var(--vellum-border);
+  color: transparent;
+}
+
+.boxChecked {
+  border: 1px solid var(--vellum-accent);
+  background: var(--vellum-accent);
+  color: var(--vellum-text-on-color);
+}

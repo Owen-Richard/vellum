@@ -1,0 +1,9 @@
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  background: var(--vellum-bg-inset);
+  border-radius: var(--vellum-radius);
+}

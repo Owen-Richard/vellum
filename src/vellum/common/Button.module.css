@@ -1,0 +1,195 @@
+
+.base {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--vellum-radius-md);
+  font-family: var(--vellum-font-ui);
+  transition:
+    background-color var(--vellum-transition),
+    color var(--vellum-transition);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+}
+
+/* ───────────────────────── Sizes (geometry only) ───────────────────────── */
+
+/* Square icon-only button */
+.size_icon {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: var(--vellum-radius-sm);
+}
+
+/* Compact text button (also fine for text+icon) */
+.size_sm {
+  padding: 0 6px;
+  font-size: var(--vellum-font-size-sm);
+  gap: 4px;
+}
+
+/* Default text button (toolbar label style) */
+.size_md {
+  padding: 2px 10px;
+  font-size: var(--vellum-font-size);
+  gap: 6px;
+}
+
+/* Larger text button — more vertical breathing room */
+.size_lg {
+  padding: 5px 10px;
+  font-size: var(--vellum-font-size-lg);
+  gap: 6px;
+}
+
+/* ─────────────────────── Alignment (full-width rows) ────────────────────
+ * `align="start" | "end"` switches the button to block-level full-width
+ * and shifts content to that edge — typical for menu items and rows.
+ * `center` (default) uses the base inline-flex centered layout. */
+
+.align_start,
+.align_end {
+  display: flex;
+  width: 100%;
+}
+
+.align_start {
+  justify-content: flex-start;
+}
+
+.align_end {
+  justify-content: flex-end;
+}
+
+/* ─────────────────────── Intents (color tokens) ────────────────────────
+ * Each intent maps the abstract button color slots to concrete palette
+ * tokens. Variants below consume only the abstract slots, so color is
+ * applied uniformly regardless of intensity.
+ *
+ *   --_btn-text       text color for filled/secondary/subtle states
+ *   --_btn-muted      text color for ghost rest state
+ *   --_btn-fill       background for `secondary` (tinted surface)
+ *   --_btn-fill-hover hover background for `secondary`
+ *   --_btn-soft       hover background for `subtle` / `ghost`
+ *   --_btn-solid      background for `primary` (and `active`/`armed:hover`)
+ *   --_btn-solid-hover hover background for `primary`
+ *   --_btn-on-solid   text color on top of a solid fill
+ * ────────────────────────────────────────────────────────────────────── */
+
+.intent_info {
+  --_btn-text: var(--vellum-text-bright);
+  --_btn-muted: var(--vellum-text-muted);
+  --_btn-fill: var(--vellum-bg-raised);
+  --_btn-fill-hover: var(--vellum-bg-hover);
+  --_btn-soft: var(--vellum-bg-hover);
+  --_btn-solid: var(--vellum-text-bright);
+  --_btn-solid-hover: var(--vellum-text);
+  --_btn-on-solid: var(--vellum-text-invert);
+}
+
+.intent_accent {
+  --_btn-text: var(--vellum-accent);
+  --_btn-muted: var(--vellum-text-muted);
+  --_btn-fill: var(--vellum-accent-alpha);
+  --_btn-fill-hover: var(--vellum-accent-alpha);
+  --_btn-soft: var(--vellum-accent-alpha);
+  --_btn-solid: var(--vellum-accent);
+  --_btn-solid-hover: var(--vellum-accent-hover);
+  --_btn-on-solid: var(--vellum-text-on-color);
+}
+
+.intent_success {
+  --_btn-text: var(--vellum-success);
+  --_btn-muted: var(--vellum-text-muted);
+  --_btn-fill: var(--vellum-success-alpha);
+  --_btn-fill-hover: var(--vellum-success-alpha);
+  --_btn-soft: var(--vellum-success-alpha);
+  --_btn-solid: var(--vellum-success);
+  --_btn-solid-hover: var(--vellum-success);
+  --_btn-on-solid: var(--vellum-text-on-color);
+}
+
+.intent_danger {
+  --_btn-text: var(--vellum-danger);
+  --_btn-muted: var(--vellum-text-muted);
+  --_btn-fill: var(--vellum-danger-alpha);
+  --_btn-fill-hover: var(--vellum-danger-alpha);
+  --_btn-soft: var(--vellum-danger-alpha);
+  --_btn-solid: var(--vellum-danger);
+  --_btn-solid-hover: var(--vellum-danger);
+  --_btn-on-solid: var(--vellum-text-on-color);
+}
+
+/* ───────────────────── Variants (intensity only) ──────────────────────── */
+
+/* primary: filled solid — the strongest CTA */
+.variant_primary {
+  background: var(--_btn-solid);
+  color: var(--_btn-on-solid);
+
+  &:hover:not(:disabled) {
+    background: var(--_btn-solid-hover);
+  }
+}
+
+/* secondary: tinted surface — default for toolbar / inline actions */
+.variant_secondary {
+  background: var(--_btn-fill);
+  color: var(--_btn-text);
+
+  &:hover:not(:disabled) {
+    background: var(--_btn-fill-hover);
+  }
+}
+
+/* subtle: transparent with intent-colored text, hover to tinted surface */
+.variant_subtle {
+  background: transparent;
+  color: var(--_btn-text);
+
+  &:hover:not(:disabled) {
+    background: var(--_btn-soft);
+  }
+}
+
+/* ghost: muted rest, hover reveals intent color + tinted surface */
+.variant_ghost {
+  background: transparent;
+  color: var(--_btn-muted);
+
+  &:hover:not(:disabled) {
+    background: var(--_btn-soft);
+    color: var(--_btn-text);
+  }
+}
+
+/* ───────────────────── States (uniform overrides) ─────────────────────── */
+
+/* active: selected state — always reads as a filled accent fill. */
+.base.active {
+  background: var(--vellum-accent);
+  color: var(--vellum-text-on-color);
+
+  &:hover:not(:disabled) {
+    background: var(--vellum-accent-hover);
+  }
+}
+
+/* armed: two-stage confirm — tinted now, solid on next hover. */
+.base.armed {
+  background: var(--_btn-fill);
+  color: var(--_btn-text);
+
+  &:hover:not(:disabled) {
+    background: var(--_btn-solid);
+    color: var(--_btn-on-solid);
+  }
+}

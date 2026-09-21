@@ -1,0 +1,138 @@
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0px 10px;
+  border-radius: var(--vellum-radius);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.filterPill {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--vellum-radius-md);
+  font-family: var(--vellum-font-ui);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--vellum-text-muted);
+  cursor: pointer;
+  transition:
+    background var(--vellum-transition),
+    opacity var(--vellum-transition);
+  opacity: 0.5;
+}
+
+.filterPill:hover {
+  opacity: 1;
+}
+
+.filterPillActive {
+  background: var(--vellum-bg-raised);
+  color: var(--vellum-text-bright);
+  opacity: 1;
+}
+
+.filterDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.empty {
+  color: var(--vellum-text-muted);
+  font-style: italic;
+  padding: 12px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 10px 32px;
+  overflow-x: auto;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-bottom: 1px solid var(--vellum-bg);
+  border-radius: var(--vellum-radius-md);
+  cursor: pointer;
+  transition: background var(--vellum-transition);
+  position: relative;
+}
+
+.item:hover {
+  background: var(--vellum-bg-hover);
+}
+
+.itemFiltered {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.itemNotVisible {
+  cursor: default;
+}
+
+.itemNotVisible .selector,
+.itemNotVisible .textRow {
+  opacity: 0.45;
+}
+
+.itemNotVisible:hover {
+  background: transparent;
+}
+
+.navigateBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+}
+
+.active {
+  background: var(--vellum-accent-alpha);
+}
+
+.selector {
+  color: var(--vellum-text-muted);
+  font-size: var(--vellum-font-size-sm);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.text {
+  color: var(--vellum-text-bright);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cssEditText {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--vellum-font-mono);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text);
+}
+
+.cssEditIcon {
+  color: var(--vellum-text-muted);
+  flex-shrink: 0;
+}
+
+.textRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

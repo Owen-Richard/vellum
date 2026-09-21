@@ -1,0 +1,21 @@
+
+.featureGroup {
+  display: flex;
+  gap: 1px;
+  align-items: center;
+}
+
+.featureDivider {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 0;
+  background-color: var(--vellum-border);
+}
+
+.label {
+  padding: 0 8px;
+  color: var(--vellum-text);
+  font-size: var(--vellum-font-size-sm);
+  font-family: var(--vellum-font-ui);
+  white-space: nowrap;
+}

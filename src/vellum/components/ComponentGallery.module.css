@@ -1,0 +1,97 @@
+
+.dialog {
+  width: 800px;
+}
+
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 420px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: var(--vellum-font-size);
+  font-weight: 600;
+  color: var(--vellum-text-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menuAnchor {
+  position: relative;
+}
+
+.badgeOverlayAnchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.caption {
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+}
+
+.checkboxLabel {
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+}
+
+/* Forces dark text on light demo badge backgrounds */
+.badgeDarkText {
+  color: oklch(0% 0 none);
+}
+
+/* variant × intent matrix */
+.matrix {
+  display: grid;
+  grid-template-columns: max-content repeat(4, max-content);
+  gap: 6px 12px;
+  align-items: center;
+  justify-content: start;
+}
+
+.matrixHeader {
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+  text-align: center;
+  text-transform: lowercase;
+}
+
+.matrixLabel {
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+  text-align: left;
+  padding-right: 4px;
+}
+
+.matrixCell {
+  display: flex;
+  justify-content: center;
+}

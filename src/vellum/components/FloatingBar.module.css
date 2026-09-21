@@ -1,0 +1,41 @@
+
+.floatingBar {
+  position: fixed;
+  inset: auto;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 4px;
+  z-index: var(--vellum-z-toolbar);
+  pointer-events: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+
+  border-radius: var(--vellum-radius-lg);
+  border: 1px solid var(--vellum-border-subtle);
+  background: var(--vellum-bg);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+  box-shadow: var(--vellum-shadow-md);
+  font-family: var(--vellum-font);
+
+  /* reset popover defaults */
+  overflow: visible;
+}
+
+.dragHandle,
+.dragHandleDragging {
+  display: flex;
+  align-items: center;
+  color: var(--vellum-text-muted);
+  padding: 5px 3px;
+  cursor: grab;
+  user-select: none;
+}
+
+.dragHandleDragging {
+  cursor: grabbing;
+}

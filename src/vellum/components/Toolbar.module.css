@@ -1,0 +1,8 @@
+
+
+/* FloatingBar now provides the container, drag handle, and positioning */
+
+.sidebarBtnWrapper {
+  position: relative;
+  display: flex;
+}

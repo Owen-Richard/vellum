@@ -1,0 +1,14 @@
+
+.divider {
+  height: 1px;
+  background: var(--vellum-border);
+  flex-shrink: 0;
+}
+
+.vertical {
+  height: 1em;
+  width: 1px;
+  align-self: center;
+  /* Match the visual inset of an icon button (24px wide, 14px icon → 5px each side). */
+  margin-inline: 5px;
+}

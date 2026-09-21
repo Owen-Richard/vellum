@@ -1,0 +1,70 @@
+
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
+  padding: 0;
+
+  border: 1px solid var(--vellum-border);
+  border-radius: var(--vellum-radius-lg);
+  background: var(--vellum-bg);
+  box-shadow: var(--vellum-shadow);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dialog::backdrop {
+  background: oklch(0% 0 none / 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Inline (non-modal) mode — no top-layer, stack above host content. */
+.dialogInline {
+  z-index: var(--vellum-z-popover);
+}
+
+/* Custom backdrop for inline mode (native ::backdrop only renders for showModal). */
+.inlineBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--vellum-z-popover) - 1);
+  background: oklch(0% 0 none / 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--vellum-border);
+  flex-shrink: 0;
+}
+
+.headerText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vellum-text-bright);
+}
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--vellum-border);
+  flex-shrink: 0;
+}

@@ -1,0 +1,56 @@
+
+
+.hover,
+.selected {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  z-index: var(--vellum-z-highlight);
+
+  top: anchor(top, -9999px);
+  left: anchor(left, -9999px);
+  width: anchor-size(width, 0);
+  height: anchor-size(height, 0);
+
+  border: 2px solid var(--vellum-accent);
+  background: var(--vellum-accent-alpha);
+  pointer-events: none;
+  position-visibility: anchors-visible;
+
+  /* reset popover defaults */
+  color: inherit;
+  overflow: visible;
+}
+
+.hover {
+  position-anchor: --vellum-hover;
+}
+
+.selected {
+  position-anchor: --vellum-selected;
+}
+
+.hoverLabel {
+  position: fixed;
+  position-anchor: --vellum-hover;
+  position-area: bottom;
+  position-try-fallbacks: top;
+  inset: auto;
+  margin: 8px;
+  padding: 2px 8px;
+  z-index: var(--vellum-z-hover-label);
+
+  border-radius: var(--vellum-radius-lg);
+  background: var(--vellum-bg);
+  border: 1px solid var(--vellum-accent);
+  box-shadow: var(--vellum-shadow-md);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text);
+  white-space: nowrap;
+  pointer-events: none;
+  position-visibility: anchors-visible;
+
+  overflow: visible;
+}

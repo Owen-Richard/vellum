@@ -1,0 +1,87 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px;
+  border-radius: var(--vellum-radius-sm);
+  background-color: var(--vellum-accent);
+  color: var(--vellum-text-on-color);
+  font-family: var(--vellum-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu {
+  min-width: 200px;
+  max-width: 280px;
+  font-family: var(--vellum-font-ui);
+  color: var(--vellum-text);
+}
+
+.menuContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  text-transform: uppercase;
+  padding: 6px 8px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--vellum-text-muted);
+}
+
+.groupHeader {
+  padding: 6px 8px 2px;
+  font-size: var(--vellum-font-size-sm);
+  font-weight: 600;
+  color: var(--vellum-text-bright);
+}
+
+.dot,
+.dotActive {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--vellum-bg-raised);
+  flex-shrink: 0;
+}
+
+button:hover .dot{
+  background-color: var(--vellum-text-muted);
+}
+
+.dotActive {
+  background-color: var(--vellum-accent);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text);
+}
+
+.emptyMessage {
+  padding: 6px 8px;
+  max-width: 220px;
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+}
+
+.emptyMessageTitle {
+  font-weight: 600;
+  color: var(--vellum-text-bright);
+  margin-bottom: 4px;
+}
+
+.subtleText {
+  color: var(--vellum-text-muted);
+}

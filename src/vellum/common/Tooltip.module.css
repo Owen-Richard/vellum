@@ -1,0 +1,30 @@
+
+.trigger {
+  display: inline-flex;
+}
+
+.tooltip {
+  position: fixed;
+  inset: auto;
+  margin: 8px;
+  padding: 2px 8px;
+
+  border-radius: var(--vellum-radius-lg);
+  border: 1px solid var(--vellum-border);
+  background: var(--vellum-bg);
+  box-shadow: var(--vellum-shadow-sm);
+  font-size: var(--vellum-font-size-sm);
+  font-family: var(--vellum-font);
+  color: var(--vellum-text);
+  white-space: nowrap;
+  pointer-events: none;
+
+  /* reset popover defaults */
+  overflow: visible;
+}
+
+.tooltip:popover-open {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

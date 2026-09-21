@@ -1,0 +1,40 @@
+
+.trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.menu {
+  position: fixed;
+  inset: auto;
+  margin: 4px;
+
+  min-width: 140px;
+  border-radius: var(--vellum-radius-md);
+  border: 1px solid var(--vellum-border);
+  background: var(--vellum-bg-elevated);
+  box-shadow: var(--vellum-shadow-dropdown);
+  flex-direction: column;
+  padding: 4px;
+  gap: 4px;
+  overflow: clip;
+
+  &:popover-open {
+    display: flex;
+  }
+}
+
+.menuInline {
+  display: flex;
+  z-index: var(--vellum-z-popover);
+}
+
+.positionBottom {
+  position-area: bottom;
+  position-try-fallbacks: top;
+}
+
+.positionBottomEnd {
+  position-area: bottom right;
+  position-try-fallbacks: top right;
+}

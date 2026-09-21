@@ -1,0 +1,38 @@
+
+.input {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 3px 6px;
+  border-radius: var(--vellum-radius-sm);
+  border: 1px solid var(--vellum-border);
+  background: var(--vellum-bg-input);
+  color: var(--vellum-text-bright);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+}
+
+.input:focus {
+  border-color: var(--vellum-accent);
+  outline: none;
+}
+
+.textarea {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--vellum-radius-sm);
+  border: 1px solid var(--vellum-border);
+  background: var(--vellum-bg-input);
+  color: var(--vellum-text-bright);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.textarea:focus {
+  border-color: var(--vellum-accent);
+  outline: none;
+}

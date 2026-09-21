@@ -1,0 +1,217 @@
+/* Tag picker */
+.tagRow {
+  position: relative;
+}
+
+.tagPill {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px 0 8px;
+  border-radius: 100px;
+  border: 1px dashed var(--vellum-border);
+  cursor: pointer;
+  anchor-name: --vellum-tag-pill;
+  transition:
+    background-color var(--vellum-transition),
+    border-color var(--vellum-transition);
+}
+
+.tagPillActive {
+  background: var(--vellum-overlay);
+  border-color: var(--vellum-text-muted);
+  border-style: solid;
+}
+
+.tagPillFilled {
+  border-style: solid;
+}
+
+.tagDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tagLabel {
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size-sm);
+  color: var(--vellum-text-muted);
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+.tagChevron {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  color: var(--vellum-text-muted);
+  transition: rotate var(--vellum-transition);
+}
+
+.tagDropdown {
+  width: 220px;
+}
+
+.tagOption {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px 7px 12px;
+  border-radius: var(--vellum-radius-md);
+  cursor: pointer;
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+  transition: background var(--vellum-transition);
+}
+
+.tagOption:hover {
+  background: var(--vellum-overlay-subtle);
+}
+
+.tagOptionSelectable {
+  flex: 1;
+  min-width: 0;
+  min-height: 22px;
+  cursor: default;
+  padding: 4px 8px 4px 12px;
+  border-radius: var(--vellum-radius-md);
+  position: relative;
+
+  & .tagOptionActions {
+    opacity: 0;
+    position: absolute;
+    right: 8px;
+    transition: opacity var(--vellum-transition);
+    pointer-events: none;
+  }
+
+  & .tagCheckIcon {
+    height: 22px;
+    transition: opacity var(--vellum-transition);
+  }
+
+  &:hover {
+    background: var(--vellum-overlay-subtle);
+
+    & .tagOptionActions {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    & .tagCheckIcon {
+      opacity: 0;
+    }
+  }
+}
+
+.tagOptionClickArea {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.tagOptionSelected {
+  background: var(--vellum-overlay);
+}
+
+.tagOptionRow {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+}
+
+.tagOptionActions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tagEditRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px 8px 12px;
+  width: 100%;
+  border-radius: var(--vellum-radius-md);
+}
+
+.tagColorSwatches {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tagSwatch {
+  all: unset;
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: box-shadow var(--vellum-transition);
+}
+
+.tagSwatch:hover {
+  box-shadow: 0 0 0 1.5px var(--vellum-overlay-ring);
+}
+
+.tagSwatchActive {
+  box-shadow: 0 0 0 1.5px var(--vellum-text-bright);
+}
+
+.tagCreateForm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 8px 8px 12px;
+  border-radius: var(--vellum-radius-md);
+}
+
+.tagCreateActions {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+  padding-top: 2px;
+}
+
+.tagEditInputWrap {
+  display: flex;
+  align-items: center;
+  background: var(--vellum-bg-input);
+  border: 1px solid var(--vellum-border);
+  border-radius: var(--vellum-radius-sm);
+  overflow: hidden;
+}
+
+.tagEditInputWrap:focus-within {
+  border-color: var(--vellum-accent);
+}
+
+.tagEditHint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 5px;
+  margin-right: 4px;
+  border-radius: var(--vellum-radius-sm);
+  background: var(--vellum-bg-hover);
+  border: 1px solid var(--vellum-border);
+  color: var(--vellum-text-muted);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+}

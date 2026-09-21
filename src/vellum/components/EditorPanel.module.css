@@ -1,0 +1,58 @@
+.editorPanels {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  transition: flex var(--vellum-transition);
+  border-top: 1px solid var(--vellum-border);
+
+  &:last-child{
+    border-bottom: 1px solid var(--vellum-border);
+  }
+}
+
+.panelCollapsed {
+  flex: 0 0 auto;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: var(--vellum-font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--vellum-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--vellum-font);
+  transition: color var(--vellum-transition);
+}
+
+.panelHeader:hover {
+  color: var(--vellum-text);
+}
+
+.panelToggle {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+}
+
+.panelBody {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}

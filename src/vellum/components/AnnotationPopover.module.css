@@ -1,0 +1,69 @@
+
+
+.popover {
+  position: fixed;
+  position-anchor: --vellum-selected;
+  inset: auto;
+  margin: 8px;
+  padding: 4px;
+  position-visibility: anchors-visible;
+  z-index: var(--vellum-z-annotation-popover);
+  pointer-events: auto;
+
+  width: 200px;
+  border-radius: var(--vellum-radius-lg);
+  border: 1px solid var(--vellum-border-subtle);
+  background: var(--vellum-bg);
+  box-shadow: var(--vellum-shadow-md);
+  font-family: var(--vellum-font-ui);
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text);
+
+  /* reset popover defaults */
+  overflow: visible;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.elementNameRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.elementName {
+  font-size: var(--vellum-font-size);
+  color: var(--vellum-text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+  padding-left: 6px;
+  line-height: 20px;
+}
+
+.elementNameActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}

@@ -1,0 +1,28 @@
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: auto;
+  padding: 1px 4px;
+  border-radius: var(--vellum-radius-xs);
+  background: var(--vellum-bg-hover);
+  border: 1px solid var(--vellum-border);
+  color: var(--vellum-text-muted);
+  font-size: 10px;
+  font-family: var(--vellum-font);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Larger variant for hotkey lists */
+.lg {
+  min-width: 28px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--vellum-radius-sm);
+  font-size: var(--vellum-font-size-sm);
+  font-family: var(--vellum-font-ui);
+  color: var(--vellum-text-bright);
+}

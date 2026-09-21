@@ -36,6 +36,15 @@ export function AnnotationDots() {
         return (
           <div
             key={annotation.id}
+            role="button"
+            tabIndex={excluded ? -1 : 0}
+            aria-label={`Annotation ${index + 1}`}
+            onKeyDown={event => {
+              if (!excluded && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                handleClick(annotation.id);
+              }
+            }}
             className={clsx(styles.dot, excluded && styles.dotFiltered)}
             style={
               {

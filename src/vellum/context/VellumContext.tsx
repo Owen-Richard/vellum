@@ -169,18 +169,19 @@ export function VellumProvider({
     }
   }, [state.tags, setSavedTags]);
 
-  // Sync sidebar visibility to <html> attribute
+  // Extension state must not change attributes used by an embedded host app.
   useEffect(() => {
+    const root = document.querySelector('[data-vellum-extension-root]');
     if (state.sidebarVisible) {
-      document.documentElement.setAttribute('data-vellum-sidebar-open', '');
+      root?.setAttribute('data-vellum-sidebar-open', '');
     } else {
-      document.documentElement.removeAttribute('data-vellum-sidebar-open');
+      root?.removeAttribute('data-vellum-sidebar-open');
     }
   }, [state.sidebarVisible]);
 
   // Sync theme to <html> attribute and localStorage
   useEffect(() => {
-    document.documentElement.setAttribute('data-vellum-theme', state.theme);
+    document.querySelector('[data-vellum-extension-root]')?.setAttribute('data-vellum-theme', state.theme);
     setSavedTheme(state.theme);
   }, [state.theme, setSavedTheme]);
 

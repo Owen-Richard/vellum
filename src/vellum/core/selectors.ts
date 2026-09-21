@@ -47,6 +47,8 @@ function siblingMatchesClass(sib: Element, cls: string): boolean {
 // page" — in a SPA the same selector may match a different element on another
 // route. Always walk the full parent chain.
 export function getUniqueSelector(el: HTMLElement): string {
+  if (el === document.body) return 'body';
+  if (el === document.documentElement) return 'html';
   const parts: string[] = [];
   let current: HTMLElement | null = el;
 
@@ -59,9 +61,13 @@ export function getUniqueSelector(el: HTMLElement): string {
 
     const stableAttr = STABLE_ATTRS.find(attr => current!.hasAttribute(attr));
     if (stableAttr) {
-      parts.unshift(
-        `${tag}[${stableAttr}="${CSS.escape(current.getAttribute(stableAttr)!)}"]`,
-      );
+      let selector = `${tag}[${stableAttr}="${CSS.escape(current.getAttribute(stableAttr)!)}"]`;
+      const siblings = Array.from(current.parentElement?.children ?? []);
+      if (siblings.filter(sibling => sibling.matches(selector)).length > 1) {
+        const sameTag = siblings.filter(sibling => sibling.tagName === current!.tagName);
+        selector += `:nth-of-type(${sameTag.indexOf(current) + 1})`;
+      }
+      parts.unshift(selector);
       current = current.parentElement;
       continue;
     }
@@ -101,13 +107,14 @@ export function getUniqueSelector(el: HTMLElement): string {
 
 export function findElementBySelector(selector: string): HTMLElement | null {
   try {
-    return document.querySelector(selector);
+    const element = document.querySelector(selector);
+    return element instanceof HTMLElement && !element.closest('[data-vellum]') ? element : null;
   } catch {
     return null;
   }
 }
 
-export function getElementLabel(el: HTMLElement): { tag: string; suffix: string } {
+export function getElementLabel(el: Element): { tag: string; suffix: string } {
   const tag = el.tagName.toLowerCase();
   let suffix = '';
   if (el.id) suffix += `#${el.id}`;

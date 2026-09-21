@@ -15,6 +15,7 @@ import popoverStyles from '../styles/popover.module.css';
 import { TagPicker } from './TagPicker';
 import styles from './AnnotationPopover.module.css';
 import type { CommentAnnotation } from '../types/vellum';
+import { copyText } from '../../extension/storage';
 
 export function AnnotationPopover() {
   const { state, dispatch, composedFilters, pathname } = useVellum();
@@ -79,7 +80,7 @@ export function AnnotationPopover() {
       );
       const htmlBlock = '```html\n' + shallowTag.outerHTML + '\n```';
       const output = [htmlBlock, block].filter(Boolean).join('\n\n');
-      await navigator.clipboard.writeText(output);
+      await copyText(output);
     } catch {
       /* clipboard unavailable */
     }
@@ -113,7 +114,7 @@ export function AnnotationPopover() {
       );
       const cssBlock = '```css\n' + ruleBlock + '\n```';
       const output = [cssBlock, block].filter(Boolean).join('\n\n');
-      await navigator.clipboard.writeText(output);
+      await copyText(output);
     } catch {
       /* clipboard unavailable */
     }
@@ -130,7 +131,7 @@ export function AnnotationPopover() {
       const tagLabel = selectedTagId
         ? state.tags.find(t => t.id === selectedTagId)?.label
         : undefined;
-      await navigator.clipboard.writeText(
+      await copyText(
         formatAnnotationBlock(text.trim(), tagLabel, context.trim()),
       );
       setCopySuccess(true);
@@ -277,6 +278,7 @@ export function AnnotationPopover() {
                 variant="ghost"
                 intent="danger"
                 size="icon"
+                aria-label="Delete annotation"
                 onClick={handleDelete}
               >
                 <Trash2 size={14} />

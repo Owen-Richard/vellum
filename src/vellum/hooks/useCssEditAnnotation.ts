@@ -25,8 +25,8 @@ import type { CssEditAnnotation } from '../types/vellum';
  * live-cascade read, avoiding ghost edits when the cascade is in transition
  * (e.g. Vellum's selecting-mode cursor still being applied).
  *
- * `saveEditorBuffer` is debounced internally; the caller can fire it on
- * every keystroke. It reconciles to one of three outcomes:
+ * `saveEditorBuffer` commits on every change so closing the extension cannot
+ * drop a pending edit. It reconciles to one of three outcomes:
  *  - buffer matches base -> delete the annotation if it exists
  *  - buffer is a non-empty diff and an annotation exists -> update in place
  *  - buffer is a non-empty diff and no annotation exists -> create a new one
@@ -83,16 +83,6 @@ export function useCssEditAnnotation(
     ? existing.editorBuffer
     : formatBaseSnapshotText(frozenBase);
 
-  // Debounce timer so the textarea can fire `onChange` on every keystroke
-  // without spamming the reducer + localStorage writes.
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(
-    () => () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    },
-    [],
-  );
-
   // Mirror the latest annotations into a ref so `saveEditorBuffer` can read
   // them without listing `state.annotations` as a dep (which would recreate
   // the callback on every keystroke-induced state change). Same pattern as
@@ -105,8 +95,6 @@ export function useCssEditAnnotation(
   const saveEditorBuffer = useCallback(
     (buffer: string) => {
       if (!selectedElement || !selector) return;
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
         const current = annotationsRef.current.find(
           a => a.kind === 'css-edit' && a.elementSelector === selector,
         ) as CssEditAnnotation | undefined;
@@ -143,7 +131,6 @@ export function useCssEditAnnotation(
           edits,
         };
         dispatch({ type: 'UPSERT_CSS_EDIT', annotation: next });
-      }, 150);
     },
     [selectedElement, selector, dispatch],
   );

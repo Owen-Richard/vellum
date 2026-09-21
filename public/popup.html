@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vellum</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header>
+      <svg class="mark" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="currentColor"/>
+        <path d="m8 9 8 16 8-16M12 9l4 8 4-8" stroke="#171717" stroke-width="2" fill="none"/>
+      </svg>
+      <div><h1>Vellum</h1><span class="subtle">Inspect. Annotate. Refine.</span></div>
+    </header>
+    <main>
+      <p id="site" class="site"></p>
+      <p id="status" role="status">Checking this page...</p>
+      <button id="activate" type="button" disabled>Loading...</button>
+      <p id="error" role="alert" hidden></p>
+    </main>
+    <footer>Runs only when you start it. Notes stay in this browser.</footer>
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

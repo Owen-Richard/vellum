@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { copyText } from '../../extension/storage';
 import { Copy, RotateCcw } from 'lucide-react';
 import { useVellum } from '../context/VellumContext';
 import { describeElement } from '../core/describeElement';
@@ -169,7 +170,7 @@ export function PropertiesPanel() {
         composedFilters,
         state.tags,
       );
-      await navigator.clipboard.writeText(block);
+      await copyText(block);
       setCopySuccess(true);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopySuccess(false), 1400);
@@ -245,7 +246,7 @@ export function PropertiesPanel() {
         </div>
       )}
 
-      {selectedElement && authorStylesText && (
+      {selectedElement && (
         <div className={styles.section}>
           <div className={styles.stylesHeader}>
             <ButtonGroup className={styles.stylesTabs}>
@@ -308,6 +309,7 @@ export function PropertiesPanel() {
               key={editorKey}
               ref={editorRef}
               className={styles.stylesTextarea}
+              aria-label="Applied CSS"
               defaultValue={initialBuffer}
               spellCheck={false}
               onChange={e => saveEditorBuffer(e.target.value)}
@@ -315,6 +317,7 @@ export function PropertiesPanel() {
           ) : (
             <Textarea
               className={styles.stylesTextarea}
+              aria-label="All CSS rules"
               readOnly
               value={authorStylesText}
             />

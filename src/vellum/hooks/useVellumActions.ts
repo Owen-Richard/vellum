@@ -4,6 +4,7 @@ import type { VellumState, VellumAction, SidebarTab } from '../types/vellum';
 import type { ComposedFilters } from '../core/filters/types';
 import { IDENTITY_FILTERS } from '../core/filters/compose';
 import { clipboardContext } from '../core/clipboardContext';
+import { copyText } from '../../extension/storage';
 
 export function useVellumActions(
   state: VellumState,
@@ -48,7 +49,7 @@ export function useVellumActions(
   const copyAnnotations = useCallback(async () => {
     if (state.annotations.length === 0) return;
     try {
-      await navigator.clipboard.writeText(await clipboardContext(state.annotations, composedFilters, state.tags));
+      await copyText(await clipboardContext(state.annotations, composedFilters, state.tags));
       setCopySuccess(true);
       if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
       copyTimerRef.current = setTimeout(() => setCopySuccess(false), 1400);
@@ -56,7 +57,7 @@ export function useVellumActions(
         dispatch({ type: 'CLEAR_ANNOTATIONS' });
       }
     } catch {
-      // clipboard unavailable in insecure contexts
+      // copyText displays the failure. Never clear annotations on failure.
     }
   }, [state.annotations, state.tags, state.clearOnCopy, dispatch, composedFilters]);
 

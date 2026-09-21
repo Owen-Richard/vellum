@@ -58,8 +58,7 @@ export async function formatAnnotationForClipboard(
     // block scannable when multiple annotations are concatenated.
     return formatAnnotationBlock('CSS Edits:', undefined, [diff, context].filter(Boolean).join('\n\n'));
   }
-  if (!el) return a.text;
-  const context = await transformSnippetWithContext(el, filters);
+  const context = el ? await transformSnippetWithContext(el, filters) : a.elementSelector;
   const tagLabel = a.tag ? tags.find(t => t.id === a.tag)?.label : undefined;
   return formatAnnotationBlock(a.text, tagLabel, context);
 }

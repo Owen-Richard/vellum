@@ -1,0 +1,42 @@
+@layer vellum-reset {
+  .root, .root :where(*) {
+    box-sizing: border-box;
+    font-family: var(--vellum-font-ui);
+    line-height: 1.5;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+}
+.root {
+  all: initial;
+  font: var(--vellum-font-size)/1.5 var(--vellum-font-ui);
+  color: var(--vellum-text);
+  color-scheme: dark;
+}
+.root[data-vellum-theme='light'] { color-scheme: light; }
+.root :where(button, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--vellum-accent);
+  outline-offset: 2px;
+}
+.error {
+  position: fixed;
+  inset: 16px auto auto 16px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 16px;
+  margin: 0;
+  border: 1px solid var(--vellum-danger);
+  border-radius: var(--vellum-radius);
+  background: var(--vellum-bg);
+  color: var(--vellum-text-bright);
+  z-index: 2147483647;
+  font: 12px/1.5 var(--vellum-font-ui);
+}
+.error button {
+  padding: 4px 8px;
+  margin-right: 8px;
+  background: var(--vellum-bg-raised);
+  color: var(--vellum-text-bright);
+  border: 1px solid var(--vellum-border);
+  border-radius: var(--vellum-radius-sm);
+  cursor: pointer;
+}

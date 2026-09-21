@@ -1,4 +1,4 @@
-:root {
+[data-vellum-extension-root] {
   /* surfaces */
   --vellum-bg: oklch(20.5% 0 none);
   --vellum-bg-hover: oklch(26.9% 0 none);
@@ -25,7 +25,7 @@
   /* typography */
   --vellum-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
   --vellum-font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Menlo, Consolas, monospace;
-  --vellum-font-size-lg:px;
+  --vellum-font-size-lg: 13px;
   --vellum-font-size: 12px;
   --vellum-font-size-sm: 11px;
   --vellum-font-ui: system-ui, sans-serif;
@@ -79,7 +79,7 @@
 }
 
 /* Light theme overrides */
-[data-vellum-theme='light'] {
+[data-vellum-extension-root][data-vellum-theme='light'] {
   /* surfaces */
   --vellum-bg: oklch(100% 0 none);
   --vellum-bg-hover: oklch(97.0% 0 none);

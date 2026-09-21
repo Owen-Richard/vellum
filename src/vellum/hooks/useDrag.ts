@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useLocalStorage } from './useLocalStorage';
+import { readStored } from '../../extension/storage';
 
 type EdgePos = {
   anchor: { v: 'top' | 'bottom'; h: 'left' | 'right' };
@@ -46,14 +47,7 @@ export function useDrag(ref: React.RefObject<HTMLElement | null>, onDragStart?: 
     if (!el) return;
     const rect = el.getBoundingClientRect();
 
-    const saved = (() => {
-      try {
-        const raw = localStorage.getItem(storageKey);
-        return raw ? (JSON.parse(raw) as EdgePos) : null;
-      } catch {
-        return null;
-      }
-    })();
+    const saved = readStored<EdgePos | null>(storageKey, null);
 
     if (saved) {
       // Clamp restored position in case the viewport changed since last visit

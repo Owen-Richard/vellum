@@ -167,7 +167,7 @@ type ElementAppliedState = {
   originals: Map<string, { value: string; priority: string }>;
 };
 
-const registry = new WeakMap<HTMLElement, ElementAppliedState>();
+const registry = new Map<HTMLElement, ElementAppliedState>();
 
 function snapshotOriginal(el: HTMLElement, prop: string) {
   let state = registry.get(el);
@@ -245,6 +245,11 @@ export function clearCssEdits(el: HTMLElement): void {
   for (const prop of Array.from(state.originals.keys())) {
     restoreOriginal(el, prop);
   }
+
+}
+
+export function clearAllCssEdits(): void {
+  for (const el of registry.keys()) clearCssEdits(el);
 }
 
 // -- Formatting --------------------------------------------------------------

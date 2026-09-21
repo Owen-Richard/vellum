@@ -166,7 +166,7 @@ function formatContextBlock(info: {
   // 3. Each component in the tree on its own line with file path
   for (const node of info.tree) {
     const loc = formatSourceLoc(node.source);
-    lines.push(`in ${node.name} (${loc})`);
+    lines.push(loc ? `in ${node.name} (${loc})` : `in ${node.name}`);
   }
 
   return lines.join('\n');
@@ -180,17 +180,11 @@ export async function transformSnippetWithContext(
   element: Element,
   filters: ComposedFilters = IDENTITY_FILTERS,
 ): Promise<string> {
-  if (!isInstrumentationActive()) {
-    console.log('[vellum] bippy instrumentation is not active');
-    return '';
-  }
-
   const resolvedElement = findNearestFiberElement(element);
   const fiber = getFiberFromHostInstance(resolvedElement);
 
   if (!fiber) {
-    console.log('[vellum] No fiber found for element', element);
-    return '';
+    return describeElement(element, { detail: 'full', filters });
   }
 
   // Find nearest composite (function/class) component
@@ -225,7 +219,6 @@ export async function transformSnippetWithContext(
   if (
     componentFiber &&
     componentName &&
-    isProjectSource(componentSource, filters.filterSource) &&
     filters.filterComponent(componentName)
   ) {
     tree.push({

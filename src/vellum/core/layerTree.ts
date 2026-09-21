@@ -31,13 +31,30 @@ export type TreeItem = {
   kind: 'component' | 'element';
   label: string;
   suffix: string;
-  fiber: Fiber;
+  fiber: Fiber | null;
   element: HTMLElement | null;
   elements: HTMLElement[];
   children: TreeItem[];
   /** True when this element (or one of its ancestors) is not rendered — e.g. display:none, visibility:hidden, or detached. */
   hidden: boolean;
 };
+
+export function buildDomTree(root: Element = document.body, limit = 2000): TreeItem[] {
+  let remaining = limit;
+  function visit(element: Element, depth: number): TreeItem[] {
+    if (remaining-- <= 0 || depth > 40 || element.closest('[data-vellum]') ||
+      HIDDEN_TAGS.has(element.tagName.toLowerCase())) return [];
+    const { tag, suffix } = getElementLabel(element);
+    const selectable = element instanceof HTMLElement ? element : null;
+    return [{
+      kind: 'element', label: tag, suffix, fiber: null, element: selectable,
+      elements: selectable ? [selectable] : [],
+      hidden: isElementHidden(element),
+      children: Array.from(element.children).flatMap(child => visit(child, depth + 1)),
+    }];
+  }
+  return visit(root, 0);
+}
 
 function isVellumFiber(fiber: Fiber): boolean {
   if (isHostFiber(fiber)) {

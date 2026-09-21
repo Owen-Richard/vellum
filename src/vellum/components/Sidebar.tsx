@@ -25,8 +25,10 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
       data-vellum
     >
       <div className={styles.tabs}>
-        <div className={styles.tabGroup}>
+        <div className={styles.tabGroup} role="tablist" aria-label="Vellum panels">
           <button
+            role="tab"
+            aria-selected={activeTab === 'annotations'}
             className={clsx(
               styles.tab,
               activeTab === 'annotations' && styles.tabActive,
@@ -38,6 +40,8 @@ export const Sidebar = forwardRef<HTMLElement, SidebarProps>(function Sidebar(
             Annotations
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'editor'}
             className={clsx(
               styles.tab,
               activeTab === 'editor' && styles.tabActive,

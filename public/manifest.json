@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Vellum",
+  "description": "Inspect elements, annotate interfaces, and preview CSS changes on the current page.",
+  "version": "0.1.0",
+  "minimum_chrome_version": "131",
+  "permissions": ["activeTab", "scripting", "storage", "clipboardWrite"],
+  "action": {
+    "default_title": "Vellum",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon-16.png",
+      "32": "icon-32.png"
+    }
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png",
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}

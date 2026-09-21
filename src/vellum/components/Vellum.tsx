@@ -8,6 +8,7 @@ import { AnnotationDots } from './AnnotationDots';
 import { Sidebar } from './Sidebar';
 import { SettingsPanel } from './SettingsPanel';
 import { VellumLayer } from './VellumLayer';
+import { usePopoverToggle } from '../hooks/usePopoverToggle';
 import type { VellumFilter } from '../core/filters/types';
 import '../common.css';
 
@@ -17,7 +18,9 @@ interface SidebarSlotProps {
 
 function SidebarSlot({ className }: SidebarSlotProps) {
   const { state } = useVellum();
-  return state.sidebarVisible ? <Sidebar className={className} /> : null;
+  const ref = useRef<HTMLElement>(null);
+  usePopoverToggle(ref, state.sidebarVisible);
+  return <Sidebar ref={ref} popover="manual" className={className} />;
 }
 
 interface OverlayInnerProps {

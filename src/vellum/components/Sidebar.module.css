@@ -1,6 +1,11 @@
 .sidebar {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
   height: 100vh;
-  width: var(--vellum-sidebar-width, 400px);
+  width: min(var(--vellum-sidebar-width, 400px), 100vw);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -10,6 +15,10 @@
   font-size: var(--vellum-font-size);
   color: var(--vellum-text);
   font-family: var(--vellum-font-ui);
+}
+
+.sidebar:not(:popover-open) {
+  display: none;
 }
 
 .tabs {

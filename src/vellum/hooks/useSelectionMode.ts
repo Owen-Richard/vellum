@@ -35,7 +35,7 @@ export function useSelectionMode(
     document.head.appendChild(style);
 
     const isExcluded = (el: HTMLElement | null) =>
-      !!el?.closest?.('[data-vellum-toolbar]');
+      !!el?.closest?.('[data-vellum]');
 
     const handleMove = (e: PointerEvent) => {
       const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
@@ -57,12 +57,13 @@ export function useSelectionMode(
       e.stopPropagation();
       e.stopImmediatePropagation();
 
-      const el = prevHoveredRef.current;
+      const target = e.target instanceof HTMLElement ? e.target : null;
+      const el = target ?? prevHoveredRef.current;
       if (!el) return;
 
       removeAnchorName(el, '--vellum-hover');
       prevHoveredRef.current = null;
-
+      style.remove();
       selectElementRef.current(el);
     };
 

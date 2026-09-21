@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useVellum } from '../context/VellumContext';
 import { useTagColorMap } from '../hooks/useTagColorMap';
 import { hasAnchorNamePrefix } from '../core/anchors';
-import { buildTree, type TreeItem } from '../core/layerTree';
+import { buildTree, buildDomTree, type TreeItem } from '../core/layerTree';
 import { findElementBySelector } from '../core/selectors';
 import styles from './LayerTree.module.css';
 
@@ -100,6 +100,22 @@ const TreeNode = memo(function TreeNode({
     <li className={styles.node}>
       <div
         ref={rowRef}
+        role="treeitem"
+        tabIndex={0}
+        aria-selected={isSelected}
+        aria-expanded={hasChildren ? expanded : undefined}
+        onKeyDown={event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleClick();
+          } else if (event.key === 'ArrowRight' && hasChildren) {
+            event.preventDefault();
+            setExpanded(true);
+          } else if (event.key === 'ArrowLeft' && hasChildren) {
+            event.preventDefault();
+            setExpanded(false);
+          }
+        }}
         className={clsx(
           styles.row,
           isSelected && styles.rowSelected,
@@ -170,7 +186,7 @@ export function LayerTree() {
   } = useVellum();
 
   const tree = useMemo(
-    () => (fiberRoot ? buildTree(fiberRoot.current.child, displayFilters) : []),
+    () => (fiberRoot ? buildTree(fiberRoot.current.child, displayFilters) : buildDomTree()),
     [fiberRoot, treeRevision, displayFilters],
   );
 
@@ -276,7 +292,7 @@ export function LayerTree() {
   if (tree.length === 0) return null;
 
   return (
-    <ul className={styles.tree} data-vellum>
+    <ul className={styles.tree} data-vellum role="tree" aria-label="Page layers">
       {tree.map((item, i) => (
         <TreeNode
           key={i}

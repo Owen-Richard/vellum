@@ -39,6 +39,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       active,
       armed,
       className,
+      onPointerUp,
+      onKeyDown,
       ...rest
     },
     ref,
@@ -62,6 +64,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           className,
         )}
         {...rest}
+        onPointerUp={onPointerUp}
+        onKeyDown={event => {
+          onKeyDown?.(event);
+          if (!event.defaultPrevented && onPointerUp && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            event.currentTarget.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+          }
+        }}
       />
     );
   },

@@ -1,0 +1,27 @@
+:root {
+  font: 12px/1.5 system-ui, sans-serif;
+  color-scheme: dark light;
+  --vellum-bg: #171717;
+  --vellum-text: #cecece;
+  --vellum-muted: #aeaeae;
+  --vellum-border: #404040;
+  --vellum-primary: #eee;
+  --vellum-danger: #fca5a5;
+}
+* { box-sizing: border-box; }
+body { width: 328px; margin: 0; background: var(--vellum-bg); color: var(--vellum-text); }
+header { display: flex; align-items: center; gap: 12px; padding: 20px; }
+h1 { font-size: 16px; line-height: 1.2; margin: 0 0 4px; }
+.subtle, footer { color: var(--vellum-muted); }
+main { padding: 0 20px 20px; }
+.site { overflow-wrap: anywhere; font-weight: 600; }
+button { width: 100%; padding: 10px; border: none; border-radius: 6px; background: var(--vellum-primary); color: var(--vellum-bg); font: inherit; font-weight: 600; cursor: pointer; }
+button:hover { filter: brightness(0.9); }
+button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 3px; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+#error { color: var(--vellum-danger); overflow-wrap: anywhere; }
+footer { padding: 12px 20px; border-top: 1px solid var(--vellum-border); font-size: 11px; }
+@media (prefers-color-scheme: light) {
+  :root { --vellum-bg: #fff; --vellum-text: #222; --vellum-muted: #555; --vellum-border: #ddd; --vellum-primary: #171717; --vellum-danger: #b91c1c; }
+  .mark path { stroke: #fff; }
+}

@@ -163,6 +163,7 @@ function buildLayerOrder(): Map<string, number> {
     }
   };
   for (const sheet of Array.from(document.styleSheets)) {
+    if (sheet.ownerNode instanceof Element && sheet.ownerNode.hasAttribute('data-vellum-selecting')) continue;
     try {
       walk(sheet.cssRules, null);
     } catch {
@@ -294,6 +295,7 @@ export function collectCascadeSources(
   // Gather across all stylesheets.
   const allMatches: MatchedRule[] = [];
   for (const sheet of Array.from(document.styleSheets)) {
+    if (sheet.ownerNode instanceof Element && sheet.ownerNode.hasAttribute('data-vellum-selecting')) continue;
     let rules: CSSRuleList;
     try {
       rules = sheet.cssRules;

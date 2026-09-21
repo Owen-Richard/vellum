@@ -36,7 +36,6 @@ export function ComponentGallery({
       onClose={onClose}
       header="Component Gallery"
       className={styles.dialog}
-      inline
       footer={
         <>
           <Button variant="subtle" size="sm" onClick={onClose}>

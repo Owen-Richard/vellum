@@ -55,6 +55,7 @@ async function openAction(page: Page) {
       sessionId, message: JSON.stringify({ id, method: 'Runtime.evaluate', params: { expression, returnByValue: true, awaitPromise: true, userGesture: true } }),
     }).catch(reject);
   });
+  await expect.poll(() => evaluate("document.querySelector('#activate') !== null")).toBe(true);
   return {
     async click(action: 'Start Vellum' | 'Stop Vellum', capture?: string) {
       await expect.poll(() => evaluate("document.querySelector('#activate')?.textContent")).toBe(action);

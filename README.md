@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/vellum-brand.png" alt="Vellum" width="640">
+</p>
+
 # Vellum for Edge
 
 Inspect elements, write annotations, and preview CSS changes on a web page.

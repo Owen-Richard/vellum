@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pagePath, storageKey, supportedUrl, validStoredValue } from '../src/extension/protocol';
+import {
+  annotationRouteFromStorageKey,
+  pagePath,
+  storageKey,
+  supportedUrl,
+  validStoredValue,
+} from '../src/extension/protocol';
 import { computeEdits, formatCssEditsDiff, parseEditorBuffer } from '../src/vellum/core/cssEdits';
 
 test('activation permits web pages but not browser pages or stores', () => {
@@ -15,6 +21,16 @@ test('notes are isolated by origin, path, query and hash', () => {
   assert.equal(new Set(urls.map(url => storageKey(url, 'vellum-annotations'))).size, urls.length);
   assert.equal(storageKey(urls[0], 'vellum-theme'), storageKey(urls[2], 'vellum-theme'));
   assert.equal(pagePath('https://a.test/a?b=1#c'), '/a?b=1#c');
+});
+test('annotation storage keys reveal routes only for the requested origin', () => {
+  const key = storageKey('https://a.test/a?b=1#c', 'vellum-annotations');
+  assert.equal(annotationRouteFromStorageKey(key, 'https://a.test'), '/a?b=1#c');
+  assert.equal(annotationRouteFromStorageKey(key, 'https://b.test'), null);
+  assert.equal(annotationRouteFromStorageKey(
+    storageKey('https://a.test/a', 'vellum-theme'),
+    'https://a.test',
+  ), null);
+  assert.equal(annotationRouteFromStorageKey('not-json', 'https://a.test'), null);
 });
 test('bridge accepts bounded, valid values only', () => {
   const note = { id: '1', kind: 'comment', text: 'Spacing', elementSelector: 'button', timestamp: 1 };

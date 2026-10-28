@@ -126,8 +126,9 @@ test('real extension action starts, selects, saves and stops', async () => {
   await page.close();
 });
 
-test('notes survive reload, remain page-scoped and do not auto-activate', async () => {
+test('notes survive reload, remain page-scoped and navigate from the site list', async () => {
   const page = await startPage();
+  const originalUrl = page.url();
   await annotate(page, 'Persistent page feedback');
   const stop = await openAction(page);
   await stop.click('Stop Vellum');
@@ -142,9 +143,15 @@ test('notes survive reload, remain page-scoped and do not auto-activate', async 
   await page.locator('#navigate').click();
   await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Show sidebar' }).click();
-  await expect(page.getByText('No annotations yet.')).toBeVisible();
-  await captureState(page, '05-annotations-empty');
-  await page.goBack();
+  await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
+  await expect(page.getByText('/fixture', { exact: true })).toBeVisible();
+  await captureState(page, '05-annotations-cross-page');
+  await page.getByRole('button', { name: 'Open annotation 1 on /fixture' }).click();
+  await page.waitForURL(originalUrl);
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
+  const resume = await openAction(page);
+  await resume.click('Start Vellum');
+  await resume.close();
   await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
   await page.close();
 });

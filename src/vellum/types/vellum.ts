@@ -55,6 +55,10 @@ export type CssEditAnnotation = AnnotationBase & {
 };
 
 export type Annotation = CommentAnnotation | CssEditAnnotation;
+export type AnnotationPage = {
+  route: string;
+  annotations: Annotation[];
+};
 
 export type SidebarTab = 'annotations' | 'editor';
 

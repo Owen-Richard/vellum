@@ -97,7 +97,7 @@ if (!window.__vellumExtension) {
       }
       if (!document.body || !('showPopover' in HTMLElement.prototype) ||
         !CSS.supports('anchor-name', '--vellum-test')) {
-        throw new Error('This page needs a current version of Microsoft Edge with HTML and CSS anchor support.');
+        throw new Error('Vellum needs a page with a document body and a current Chromium browser with HTML popover and CSS anchor support.');
       }
       focusBefore = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       currentUrl = location.href;

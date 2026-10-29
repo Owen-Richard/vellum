@@ -7,8 +7,6 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    env:
-      VELLUM_BROWSER: chromium
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,5 +19,5 @@ jobs:
       - run: npm run package
       - uses: actions/upload-artifact@v4
         with:
-          name: vellum-edge
-          path: artifacts/vellum-edge.zip
+          name: vellum
+          path: artifacts/vellum.zip

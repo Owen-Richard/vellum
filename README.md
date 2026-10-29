@@ -2,46 +2,42 @@
   <img src=".github/assets/vellum-brand.png" alt="Vellum" width="640">
 </p>
 
-# Vellum for Edge
+# Vellum
 
 Inspect elements, write annotations, and preview CSS changes on a web page.
+Vellum is a desktop browser extension built for Chromium, including Chrome and
+Microsoft Edge.
 
-This private extension derives from `coreai-microsoft/mini-foundry`, not the
-standalone Vellum repository. The initial `src/vellum/` import is unchanged from
-`packages/vellum/src/` at commit `0104e3b1`.
+## Install
 
-Design source: the Mini Foundry implementation. The requested CoreAI DS Vellum
-Figma source page could not be located. The destination file is
-`ZRXd0l2ccHC388qwGBoNlc`, page `0:1`. The browser-state board is frame `63:101`,
-with 28 editable state variants in component set `63:3054` on the
-`Vellum state components` page. The initial inventory was built before
-implementation, then replaced with running-browser states. This is not a claim
-that the CoreAI DS source was copied.
-
-The board includes toolbar, selection, annotations, tags, CSS editing, settings,
-themes, shortcuts, component gallery, clipboard feedback, and extension popup
-states. Figma uses JetBrains Mono where the captured Menlo font was unavailable.
-The source remains authoritative for interactions and additional edge cases.
-
-Existing source attribution and ownership are retained. No license grant is
-implied by this private extraction.
-
-## Install in Edge
-
-Requires Node.js 22 or newer and Microsoft Edge 131 or newer.
+Requires Node.js 22 or newer to build, and a desktop Chromium browser based on
+Chromium 131 or newer. Use a current browser release. Vellum needs Manifest V3
+extension support, HTML popovers, and CSS anchor positioning.
 
 ```sh
 npm ci
 npm run build
 ```
 
-Open `edge://extensions`, enable **Developer mode**, select **Load unpacked**,
-and choose this repository's `dist/` folder. Pin Vellum in the extension menu.
-Open an ordinary web page and click the Vellum browser icon to start it.
-Click the icon again to stop it. A reload requires starting it again.
+Open your browser's extension manager:
 
-`npm run package` produces `artifacts/vellum-edge.zip` for manual distribution.
-The extension is not published to the Edge Add-ons store.
+| Browser | Extension manager |
+| --- | --- |
+| Chrome / Chromium | `chrome://extensions` |
+| Microsoft Edge | `edge://extensions` |
+
+Enable **Developer mode**, select **Load unpacked**, and choose this repository's
+`dist/` folder. Pin Vellum in the extension menu.
+
+Open an ordinary web page and click the Vellum browser icon to start it.
+Click the icon again to stop it. After reloading the page, start Vellum again.
+
+`npm run package` produces `artifacts/vellum.zip` for manual distribution.
+Unzip it and load the extracted folder with **Load unpacked**. Vellum is not
+published to the Chrome Web Store or Microsoft Edge Add-ons.
+
+Automated browser checks run in Chromium. Other Chromium-based browsers have not
+been separately verified. This package does not support Firefox or Safari.
 
 ## Features
 
@@ -107,21 +103,28 @@ expose other origins, arbitrary extension storage keys, or extension APIs.
 ## Development and verification
 
 ```sh
+npm ci
+npx playwright install chromium
+npm run check
+```
+
+`npm run check` runs these steps:
+
+```sh
 npm run typecheck
 npm test
 npm run build
 npm run test:browser
 ```
 
-Browser checks use installed Microsoft Edge in a separate temporary profile.
-They load the actual extension, trigger its browser action, and exercise the
-one-click action and storage. They do not change the normal Edge profile.
+Browser checks use Playwright's Chromium in a separate temporary profile. They
+load the actual extension, trigger its browser action, and exercise the
+one-click action and storage. They do not change your normal browser profile.
 
-For Chromium:
+To select an installed Microsoft Edge build that supports the test harness:
 
 ```sh
-npx playwright install chromium
-VELLUM_BROWSER=chromium npm run test:browser
+VELLUM_BROWSER=msedge npm run test:browser
 ```
 
 Tests use a local example site, not private work pages. Captures go to
@@ -133,3 +136,16 @@ script; the packaged extension never does.
 Source changes for the extension live in `src/extension/`. `src/vellum/` retains
 the source component layout and design tokens. The import commit separates the
 original library from browser-specific changes.
+
+## Source and design
+
+This extension derives from `coreai-microsoft/mini-foundry`, not the standalone
+Vellum repository. The initial `src/vellum/` import is unchanged from
+`packages/vellum/src/` at commit `0104e3b1`.
+
+The [Vellum Figma file](https://www.figma.com/design/ZRXd0l2ccHC388qwGBoNlc/Vellum)
+contains design references. The implementation remains authoritative for
+interactions and edge cases.
+
+Existing source attribution and ownership are retained. No additional license
+grant is implied.

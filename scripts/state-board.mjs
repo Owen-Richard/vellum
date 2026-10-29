@@ -13,6 +13,6 @@ section{width:1440px}section>div{isolation:isolate}
 </style>
 <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
 </head><body><h1>Vellum / Verified browser states</h1>
-<p>${files.length} states captured from the running Edge extension. Source: Mini Foundry Vellum. Example content only.</p>
+<p>${files.length} states captured from the running Vellum extension. Source: Mini Foundry Vellum. Example content only.</p>
 <div class="grid">${cards.join('')}</div></body></html>`);
 console.log(`Created editable state board with ${files.length} captured states.`);

@@ -8,7 +8,7 @@ let cdp: CDPSession;
 let extensionId: string;
 test.beforeAll(async () => {
   context = await chromium.launchPersistentContext('', {
-    channel: process.env.VELLUM_BROWSER ?? 'msedge',
+    channel: process.env.VELLUM_BROWSER ?? 'chromium',
     headless: true,
     ignoreDefaultArgs: ['--disable-extensions'],
     args: ['--enable-unsafe-extension-debugging'],
@@ -239,7 +239,7 @@ test('React metadata, page CSP, restricted pages and host typing are supported',
   await annotate(csp);
   await csp.close();
   const restricted = await context.newPage();
-  await restricted.goto(process.env.VELLUM_BROWSER === 'chromium' ? 'chrome://settings' : 'edge://settings');
+  await restricted.goto(process.env.VELLUM_BROWSER === 'msedge' ? 'edge://settings' : 'chrome://settings');
   await clickAction(restricted);
   await expect.poll(actionTitle).toContain('Browser settings and extension stores are blocked.');
   await expect(restricted.locator('[data-vellum-extension-root]')).toHaveCount(0);

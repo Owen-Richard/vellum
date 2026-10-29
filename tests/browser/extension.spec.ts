@@ -26,6 +26,7 @@ test.beforeEach(async () => {
 
 async function clickAction(page: Page) {
   await page.bringToFront();
+  await expect.poll(() => page.evaluate(() => document.hasFocus())).toBe(true);
   const { targetInfos } = await cdp.send('Target.getTargets', { filter: [{ type: 'tab' }] });
   const tab = targetInfos.find(target => target.url === page.url());
   if (!tab) throw new Error(`No browser tab target for ${page.url()}: ${JSON.stringify(targetInfos)}`);

@@ -6,6 +6,23 @@ chrome.runtime.onInstalled.addListener(() => {
 
 const pending = new Set<number>();
 
+async function isActive(tabId: number) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const [state] = await chrome.scripting.executeScript({
+        target: { tabId }, world: 'MAIN',
+        func: () => Boolean(window.__vellumExtension?.active),
+      });
+      return Boolean(state.result);
+    } catch (cause) {
+      // Older Chromium builds can dispatch the click before the tab grant reaches the renderer.
+      if (attempt >= 4 || !(cause instanceof Error) ||
+        !cause.message.startsWith('Cannot access contents of')) throw cause;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  }
+}
+
 chrome.action.onClicked.addListener(tab => {
   if (tab.id === undefined || pending.has(tab.id)) return;
   const tabId = tab.id;
@@ -21,11 +38,7 @@ async function toggle(tabId: number, url?: string) {
     if (!url || !supportedUrl(url)) {
       throw new Error('Open a regular http or https page. Browser settings and extension stores are blocked.');
     }
-    const [state] = await chrome.scripting.executeScript({
-      target: { tabId }, world: 'MAIN',
-      func: () => Boolean(window.__vellumExtension?.active),
-    });
-    active = Boolean(state.result);
+    active = await isActive(tabId);
     if (active) {
       const [result] = await chrome.scripting.executeScript({
         target: { tabId }, world: 'MAIN',

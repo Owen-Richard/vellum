@@ -23,5 +23,4 @@ button:disabled { opacity: 0.4; cursor: not-allowed; }
 footer { padding: 12px 20px; border-top: 1px solid var(--vellum-border); font-size: 11px; }
 @media (prefers-color-scheme: light) {
   :root { --vellum-bg: #fff; --vellum-text: #222; --vellum-muted: #555; --vellum-border: #ddd; --vellum-primary: #171717; --vellum-danger: #b91c1c; }
-  .mark path { stroke: #fff; }
 }

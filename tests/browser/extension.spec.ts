@@ -103,6 +103,10 @@ test('real extension action starts, selects, saves and stops', async () => {
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('http://127.0.0.1:5198/fixture');
   const popup = await openAction(page);
+  await expect.poll(() => popup.evaluate(`(() => {
+    const mark = document.querySelector('img.mark');
+    return mark?.getAttribute('src') === 'icon-128.png' && mark.complete && mark.naturalWidth === 128;
+  })()`)).toBe(true);
   await popup.click('Start Vellum');
   await popup.close();
   await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeVisible();

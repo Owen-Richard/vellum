@@ -27,7 +27,7 @@ function ErrorNotice({ requiresRestart = false }: { requiresRestart?: boolean })
   if (!error) return null;
   return <div data-vellum ref={ref} popover="manual" role="alert" className={styles.error}>
     <p>{error}</p>
-    {requiresRestart ? <p>Stop Vellum from the extension menu, then start it again to retry.</p> : <>
+    {requiresRestart ? <p>Click the Vellum browser icon to stop it, then click again to retry.</p> : <>
       <button onClick={() => { void retryStorage().catch(cause => reportError(String(cause))); }}>Retry save</button>
       <button onClick={clearError}>Dismiss</button>
     </>}
@@ -40,7 +40,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
   componentDidCatch(error: Error) { reportError(`Vellum could not render. ${error.message}`); }
   render() {
     return this.state.failed
-      ? <p role="alert" className={styles.error}>Vellum could not render. Stop it from the extension menu, then reload this page.</p>
+      ? <p role="alert" className={styles.error}>Vellum could not render. Click the Vellum browser icon to stop it, then reload this page.</p>
       : this.props.children;
   }
 }

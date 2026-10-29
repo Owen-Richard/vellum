@@ -7,7 +7,6 @@
   "permissions": ["activeTab", "scripting", "storage", "clipboardWrite"],
   "action": {
     "default_title": "Vellum",
-    "default_popup": "popup.html",
     "default_icon": {
       "16": "icon-16.png",
       "32": "icon-32.png"

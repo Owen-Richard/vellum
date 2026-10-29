@@ -1,6 +1,6 @@
 import { test, expect, chromium, type BrowserContext, type CDPSession, type Page } from '@playwright/test';
 import { resolve } from 'node:path';
-import { captureState, snapshotDocument, writeStateHtml } from './capture-state';
+import { captureState } from './capture-state';
 import { storageKey } from '../../src/extension/protocol';
 
 let context: BrowserContext;
@@ -24,63 +24,27 @@ test.beforeEach(async () => {
   await worker.evaluate(() => chrome.storage.local.clear());
 });
 
-async function openAction(page: Page) {
+async function clickAction(page: Page) {
   await page.bringToFront();
+  await expect.poll(() => page.evaluate(() => document.hasFocus())).toBe(true);
   const { targetInfos } = await cdp.send('Target.getTargets', { filter: [{ type: 'tab' }] });
   const tab = targetInfos.find(target => target.url === page.url());
   if (!tab) throw new Error(`No browser tab target for ${page.url()}: ${JSON.stringify(targetInfos)}`);
   await cdp.send('Extensions.triggerAction', { id: extensionId, targetId: tab.targetId });
-  let popupId = '';
-  await expect.poll(async () => {
-    const { targetInfos } = await cdp.send('Target.getTargets');
-    popupId = targetInfos.find(target => target.url === `chrome-extension://${extensionId}/popup.html`)?.targetId ?? '';
-    return popupId;
-  }).not.toBe('');
-  const { sessionId } = await cdp.send('Target.attachToTarget', { targetId: popupId, flatten: false });
-  let nextId = 0;
-  const evaluate = (expression: string): Promise<unknown> => new Promise((resolve, reject) => {
-    const id = ++nextId;
-    const timer = setTimeout(() => { cdp.off('Target.receivedMessageFromTarget', listener); reject(new Error('Popup command timed out')); }, 10_000);
-    const listener = (event: { sessionId: string; message: string }) => {
-      if (event.sessionId !== sessionId) return;
-      const message = JSON.parse(event.message);
-      if (message.id !== id) return;
-      clearTimeout(timer);
-      cdp.off('Target.receivedMessageFromTarget', listener);
-      if (message.error || message.result?.exceptionDetails) reject(new Error(JSON.stringify(message)));
-      else resolve(message.result.result.value);
-    };
-    cdp.on('Target.receivedMessageFromTarget', listener);
-    void cdp.send('Target.sendMessageToTarget', {
-      sessionId, message: JSON.stringify({ id, method: 'Runtime.evaluate', params: { expression, returnByValue: true, awaitPromise: true, userGesture: true } }),
-    }).catch(reject);
+}
+
+async function actionTitle() {
+  return context.serviceWorkers()[0].evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    return chrome.action.getTitle({ tabId: tab.id });
   });
-  await expect.poll(() => evaluate("document.querySelector('#activate') !== null")).toBe(true);
-  return {
-    async click(action: 'Start Vellum' | 'Stop Vellum', capture?: string) {
-      await expect.poll(() => evaluate("document.querySelector('#activate')?.textContent")).toBe(action);
-      const html = await evaluate(`document.querySelector('#activate').click(); (${snapshotDocument.toString()})()`);
-      if (capture) await writeStateHtml(capture, String(html));
-      const next = action === 'Start Vellum' ? 'Stop Vellum' : 'Start Vellum';
-      await expect.poll(() => evaluate("document.querySelector('#error').hidden ? document.querySelector('#activate').textContent : document.querySelector('#error').textContent")).toBe(next);
-    },
-    close: () => cdp.send('Target.closeTarget', { targetId: popupId }),
-    evaluate,
-    async capture(name: string) {
-      await writeStateHtml(name, String(await evaluate(`(${snapshotDocument.toString()})()`)));
-    },
-  };
 }
 
 async function startPage(path = '/fixture') {
   const page = await context.newPage();
   await page.goto(`http://127.0.0.1:5198${path}`);
-  const popup = await openAction(page);
-  await expect.poll(() => popup.evaluate("document.querySelector('#activate').textContent")).toBe('Start Vellum');
-  await popup.capture('21-popup-ready');
-  await popup.click('Start Vellum', '22-popup-starting');
-  await popup.capture('23-popup-active');
-  await popup.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
   await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeVisible();
   await captureState(page, '01-toolbar-idle');
   return page;
@@ -102,9 +66,11 @@ test('real extension action starts, selects, saves and stops', async () => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('http://127.0.0.1:5198/fixture');
-  const popup = await openAction(page);
-  await popup.click('Start Vellum');
-  await popup.close();
+  expect(await context.serviceWorkers()[0].evaluate(() => chrome.runtime.getManifest().action?.default_popup)).toBeUndefined();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  const { targetInfos } = await cdp.send('Target.getTargets');
+  expect(targetInfos.some(target => target.url === `chrome-extension://${extensionId}/popup.html`)).toBe(false);
   await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Select', exact: true }).click();
   await page.getByTestId('review-action').click();
@@ -115,9 +81,8 @@ test('real extension action starts, selects, saves and stops', async () => {
   await expect(page.getByText('Increase the spacing around this action.', { exact: true })).toBeVisible();
   await page.screenshot({ path: 'artifacts/annotations-dark.png' });
   await captureState(page, '04-annotations-populated');
-  const stopPopup = await openAction(page);
-  await stopPopup.click('Stop Vellum');
-  await stopPopup.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
   await page.getByTestId('review-action').click();
   await expect(page.locator('#click-count')).toHaveText('Host clicks: 1');
@@ -126,25 +91,29 @@ test('real extension action starts, selects, saves and stops', async () => {
   await page.close();
 });
 
-test('notes survive reload, remain page-scoped and do not auto-activate', async () => {
+test('notes survive reload, remain page-scoped and navigate from the site list', async () => {
   const page = await startPage();
+  const originalUrl = page.url();
   await annotate(page, 'Persistent page feedback');
-  const stop = await openAction(page);
-  await stop.click('Stop Vellum');
-  await stop.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
   await page.reload();
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
-  const restart = await openAction(page);
-  await restart.click('Start Vellum');
-  await restart.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
   await page.getByRole('button', { name: 'Show sidebar' }).click();
   await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
   await page.locator('#navigate').click();
   await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Show sidebar' }).click();
-  await expect(page.getByText('No annotations yet.')).toBeVisible();
-  await captureState(page, '05-annotations-empty');
-  await page.goBack();
+  await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
+  await expect(page.getByText('/fixture', { exact: true })).toBeVisible();
+  await captureState(page, '05-annotations-cross-page');
+  await page.getByRole('button', { name: 'Open annotation 1 on /fixture' }).click();
+  await page.waitForURL(originalUrl);
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
   await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
   await page.close();
 });
@@ -174,9 +143,8 @@ test('DOM editor applies, resets and restores CSS when stopped', async () => {
   await expect(page.getByTestId('review-action')).toHaveCSS('padding-top', '10px');
   await editor.fill(base + '\npadding: 32px;');
   await expect(page.getByTestId('review-action')).toHaveCSS('padding-top', '32px');
-  const stop = await openAction(page);
-  await stop.click('Stop Vellum');
-  await stop.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
   await expect(page.getByTestId('review-action')).toHaveCSS('padding-top', '10px');
   expect((await page.getByTestId('review-action').getAttribute('style')) || null).toBe(original);
   await page.close();
@@ -272,11 +240,9 @@ test('React metadata, page CSP, restricted pages and host typing are supported',
   await csp.close();
   const restricted = await context.newPage();
   await restricted.goto(process.env.VELLUM_BROWSER === 'msedge' ? 'edge://settings' : 'chrome://settings');
-  const popup = await openAction(restricted);
-  await expect.poll(() => popup.evaluate("document.querySelector('#activate').textContent")).toBe('Unavailable');
-  await expect.poll(() => popup.evaluate("document.querySelector('#activate').disabled")).toBe(true);
-  await popup.capture('24-popup-restricted');
-  await popup.close();
+  await clickAction(restricted);
+  await expect.poll(actionTitle).toContain('Browser settings and extension stores are blocked.');
+  await expect(restricted.locator('[data-vellum-extension-root]')).toHaveCount(0);
   await restricted.close();
 });
 
@@ -308,14 +274,18 @@ test('invalid stored data surfaces a startup error without overwriting it', asyn
   await worker.evaluate(async key => { await chrome.storage.local.set({ [key]: [{ broken: true }] }); }, key);
   const page = await context.newPage();
   await page.goto('http://127.0.0.1:5198/fixture');
-  const popup = await openAction(page);
-  await expect.poll(() => popup.evaluate("document.querySelector('#activate').textContent")).toBe('Start Vellum');
-  await popup.evaluate("document.querySelector('#activate').click()");
-  await expect.poll(() => popup.evaluate("document.querySelector('#error').textContent")).toContain('invalid');
-  await popup.capture('28-popup-storage-error');
+  await clickAction(page);
+  await expect.poll(actionTitle).toContain('invalid');
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
   expect(await worker.evaluate(async key => (await chrome.storage.local.get(key))[key], key)).toEqual([{ broken: true }]);
-  await popup.close();
+  await worker.evaluate(async key => { await chrome.storage.local.remove(key); }, key);
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeVisible();
+  expect(await worker.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    return chrome.action.getBadgeText({ tabId: tab.id });
+  })).toBe('');
   await page.close();
 });
 
@@ -327,11 +297,10 @@ test('route load failures stay visible and can be stopped without overwriting no
   await worker.evaluate(async key => { await chrome.storage.local.set({ [key]: [{ broken: true }] }); }, key);
   await page.evaluate(url => history.pushState({}, '', url), nextUrl);
   await expect(page.getByRole('alert')).toContainText('invalid');
-  await expect(page.getByRole('alert')).toContainText('Stop Vellum from the extension menu');
+  await expect(page.getByRole('alert')).toContainText('Click the Vellum browser icon to stop it');
   await expect(page.getByRole('button', { name: 'Select', exact: true })).toHaveCount(0);
-  const popup = await openAction(page);
-  await popup.click('Stop Vellum');
-  await popup.close();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
   expect(await worker.evaluate(async key => (await chrome.storage.local.get(key))[key], key)).toEqual([{ broken: true }]);
   await page.close();

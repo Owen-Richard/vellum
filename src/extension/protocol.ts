@@ -7,7 +7,8 @@ export const STORAGE_KEYS = [
   'vellum-toolbar-pos',
 ] as const;
 export type StorageKey = typeof STORAGE_KEYS[number];
-export type StoredValues = Partial<Record<StorageKey, unknown>>;
+export const ANNOTATION_PAGES_KEY = 'vellum-annotation-pages';
+export type StoredValues = Partial<Record<StorageKey | typeof ANNOTATION_PAGES_KEY, unknown>>;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -22,6 +23,20 @@ export function storageKey(url: string, key: StorageKey): string {
   const parsed = new URL(url);
   const scope = key === 'vellum-annotations' ? pagePath(url) : '';
   return JSON.stringify(['vellum', 1, parsed.origin, scope, key]);
+}
+
+export function annotationRouteFromStorageKey(key: string, origin: string): string | null {
+  try {
+    const parsed: unknown = JSON.parse(key);
+    if (!Array.isArray(parsed) || parsed.length !== 5 ||
+      parsed[0] !== 'vellum' || parsed[1] !== 1 || parsed[2] !== origin ||
+      typeof parsed[3] !== 'string' || parsed[4] !== 'vellum-annotations') {
+      return null;
+    }
+    return parsed[3];
+  } catch {
+    return null;
+  }
 }
 
 export function supportedUrl(url: string): boolean {

@@ -50,11 +50,71 @@
   padding: 12px;
 }
 
+.pages {
+  padding: 4px 10px 32px;
+  overflow-x: auto;
+}
+
+.pageGroup + .pageGroup {
+  margin-top: 14px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 8px;
+}
+
+.pageTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.currentPage {
+  color: var(--vellum-text-bright);
+  font-size: var(--vellum-font-size-sm);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.pageRoute {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pageLink {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  color: var(--vellum-text);
+  font-size: var(--vellum-font-size-sm);
+  cursor: pointer;
+}
+
+.pageLink:hover {
+  color: var(--vellum-text-bright);
+}
+
+.pageCount {
+  color: var(--vellum-text-muted);
+  font-size: var(--vellum-font-size-sm);
+  flex-shrink: 0;
+}
+
 .list {
   list-style: none;
   margin: 0;
-  padding: 4px 10px 32px;
-  overflow-x: auto;
+  padding: 0;
 }
 
 .item {
@@ -66,7 +126,6 @@
   border-radius: var(--vellum-radius-md);
   cursor: pointer;
   transition: background var(--vellum-transition);
-  position: relative;
 }
 
 .item:hover {
@@ -91,11 +150,15 @@
   background: transparent;
 }
 
-.navigateBtn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 1;
+.itemOtherPage {
+  cursor: pointer;
+}
+
+.selectorRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
 .active {
@@ -109,6 +172,12 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  flex: 1;
+}
+
+.rowLinkIcon {
+  color: var(--vellum-text-muted);
+  flex-shrink: 0;
 }
 
 .text {

@@ -14,6 +14,7 @@ import type {
   VellumState,
   VellumAction,
   Annotation,
+  AnnotationPage,
   AnnotationTag,
   VellumTheme,
 } from '../types/vellum';
@@ -43,6 +44,8 @@ import { useVellumActions } from '../hooks/useVellumActions';
 import { useEventIsolation } from '../hooks/useEventIsolation';
 import { reducer, migrateAnnotation } from './reducer';
 import { useSelectionMode } from '../hooks/useSelectionMode';
+import { ANNOTATION_PAGES_KEY } from '../../extension/protocol';
+import { readStored } from '../../extension/storage';
 
 type VellumActions = ReturnType<typeof useVellumActions>;
 
@@ -61,6 +64,8 @@ type VellumContextValue = {
   pathname: string;
   /** Host-app navigation handler — Vellum never reads/writes `window.location` itself. */
   navigate: (route: string) => void;
+  /** Saved annotations grouped by page on the current site. */
+  annotationPages: AnnotationPage[];
 };
 
 const VellumContext = createContext<VellumContextValue | null>(null);
@@ -97,6 +102,13 @@ export function VellumProvider({
     () => savedAnnotationsRaw.map(migrateAnnotation),
     [savedAnnotationsRaw],
   );
+  const loadedAnnotationPages = useMemo(() => {
+    const pages = readStored<Record<string, Annotation[]>>(ANNOTATION_PAGES_KEY, {});
+    return Object.entries(pages).map(([route, annotations]) => ({
+      route,
+      annotations: annotations.map(migrateAnnotation),
+    }));
+  }, []);
 
   const [savedTags, setSavedTags] = useLocalStorage<AnnotationTag[]>(
     'vellum-tags',
@@ -316,6 +328,14 @@ export function VellumProvider({
 
   const actions = useVellumActions(state, stableDispatch, activeFilters);
   useHotkeys(state, actions);
+  const annotationPages = useMemo(() => {
+    const pages = new Map(
+      loadedAnnotationPages.map(page => [page.route, page.annotations]),
+    );
+    if (state.annotations.length > 0) pages.set(pathname, state.annotations);
+    else pages.delete(pathname);
+    return [...pages].map(([route, annotations]) => ({ route, annotations }));
+  }, [loadedAnnotationPages, pathname, state.annotations]);
 
   return (
     <VellumContext.Provider
@@ -330,6 +350,7 @@ export function VellumProvider({
         composedFilters: activeFilters,
         pathname,
         navigate,
+        annotationPages,
       }}
     >
       {children}

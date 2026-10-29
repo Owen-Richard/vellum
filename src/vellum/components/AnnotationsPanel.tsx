@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Pencil, ExternalLink } from 'lucide-react';
 import { useVellum } from '../context/VellumContext';
 import { useAnnotationInteraction } from '../hooks/useAnnotationInteraction';
-import { Badge, Button, Tooltip } from '../common';
+import { Badge } from '../common';
 import { removeAnchorName } from '../core/anchors';
 import { findElementBySelector } from '../core/selectors';
 import { describeElement } from '../core/describeElement';
@@ -47,8 +47,15 @@ function FilterPill({ label, active, dotColor, activeStyle, onClick }: FilterPil
 }
 
 export function AnnotationsPanel() {
-  const { state, dispatch, displayFilters, treeRevision, pathname, navigate } =
-    useVellum();
+  const {
+    state,
+    dispatch,
+    displayFilters,
+    treeRevision,
+    pathname,
+    navigate,
+    annotationPages,
+  } = useVellum();
   const { handleHover, handleClick } = useAnnotationInteraction();
 
   // Keep a ref to the latest hovered element so the unmount cleanup can access it
@@ -69,11 +76,11 @@ export function AnnotationsPanel() {
 
   const usedTagIds = useMemo(() => {
     const ids = new Set<string>();
-    for (const a of state.annotations) {
+    for (const a of annotationPages.flatMap(page => page.annotations)) {
       if (a.kind === 'comment' && a.tag) ids.add(a.tag);
     }
     return ids;
-  }, [state.annotations]);
+  }, [annotationPages]);
 
   const visibleTags = useMemo(
     () => state.tags.filter(t => usedTagIds.has(t.id)),
@@ -83,22 +90,26 @@ export function AnnotationsPanel() {
   const hasActiveFilter = state.activeTagFilter.length > 0;
   const tagColorMap = useTagColorMap(state.tags);
   const hasUntagged = useMemo(
-    () => state.annotations.some(a => a.kind === 'comment' && !a.tag),
-    [state.annotations],
+    () =>
+      annotationPages.some(page =>
+        page.annotations.some(a => a.kind === 'comment' && !a.tag),
+      ),
+    [annotationPages],
   );
   const showFilterBar =
-    state.annotations.length > 0 && (visibleTags.length > 0 || hasUntagged);
+    annotationPages.length > 0 && (visibleTags.length > 0 || hasUntagged);
 
-  const sortedAnnotations = useMemo(() => {
-    if (!hasActiveFilter) return state.annotations;
-    return [...state.annotations].sort((a, b) => {
-      const aExcluded = isExcludedByTagFilter(a, state.activeTagFilter);
-      const bExcluded = isExcludedByTagFilter(b, state.activeTagFilter);
-      if (!aExcluded && bExcluded) return -1;
-      if (aExcluded && !bExcluded) return 1;
-      return 0;
-    });
-  }, [state.annotations, state.activeTagFilter, hasActiveFilter]);
+  const sortedPages = useMemo(
+    () =>
+      [...annotationPages].sort((a, b) => {
+        if (a.route === pathname) return -1;
+        if (b.route === pathname) return 1;
+        const aLatest = Math.max(...a.annotations.map(note => note.timestamp));
+        const bLatest = Math.max(...b.annotations.map(note => note.timestamp));
+        return bLatest - aLatest || a.route.localeCompare(b.route);
+      }),
+    [annotationPages, pathname],
+  );
 
   // Map of annotation id -> resolved anchor element (or null when not on page).
   // Recomputed when annotations change, the route changes, or the fiber tree updates.
@@ -156,91 +167,191 @@ export function AnnotationsPanel() {
           ))}
         </div>
       )}
-      {state.annotations.length === 0 ? (
+      {annotationPages.length === 0 ? (
         <p className={styles.empty}>No annotations yet.</p>
       ) : (
-        <ul className={styles.list}>
-          {sortedAnnotations.map((a, index) => {
-            const excluded = isExcludedByTagFilter(a, state.activeTagFilter);
-            const tagColor =
-              a.kind === 'comment' ? resolveTagColor(tagColorMap, a) : null;
-            const el = elementMap.get(a.id) ?? null;
-            const visibleOnPage = el !== null;
-            const route = a.kind === 'comment' ? a.route : undefined;
-            const canNavigate = !!route && route !== pathname;
+        <div className={styles.pages}>
+          {sortedPages.map(page => {
+            const isCurrentPage = page.route === pathname;
+            const annotationNumbers = new Map(
+              page.annotations.map((annotation, index) => [
+                annotation.id,
+                index + 1,
+              ]),
+            );
+            const sortedAnnotations = hasActiveFilter
+              ? [...page.annotations].sort((a, b) => {
+                  const aExcluded = isExcludedByTagFilter(
+                    a,
+                    state.activeTagFilter,
+                  );
+                  const bExcluded = isExcludedByTagFilter(
+                    b,
+                    state.activeTagFilter,
+                  );
+                  if (!aExcluded && bExcluded) return -1;
+                  if (aExcluded && !bExcluded) return 1;
+                  return 0;
+                })
+              : page.annotations;
+
             return (
-              <li
-                key={a.id}
-                className={clsx(
-                  styles.item,
-                  state.editingAnnotationId === a.id && styles.active,
-                  excluded && styles.itemFiltered,
-                  !visibleOnPage && styles.itemNotVisible,
-                )}
-                onPointerEnter={
-                  excluded || !visibleOnPage
-                    ? undefined
-                    : () => handleHover(a.id, true)
-                }
-                onPointerLeave={
-                  excluded || !visibleOnPage
-                    ? undefined
-                    : () => handleHover(a.id, false)
-                }
-                onClick={
-                  excluded || !visibleOnPage
-                    ? undefined
-                    : () => handleClick(a.id)
-                }
-              >
-                {canNavigate && (
-                  <Tooltip text={`Go to ${route}`} className={styles.navigateBtn}>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Navigate to ${route}`}
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (route) navigate(route);
-                      }}
-                    >
-                      <ExternalLink size={12} />
-                    </Button>
-                  </Tooltip>
-                )}
-                <span className={styles.selector}>
-                  {el
-                    ? describeElement(el, {
-                        detail: 'medium',
-                        filters: displayFilters,
-                      })
-                    : a.elementSelector}
-                </span>
-                <span className={styles.textRow}>
-                  <Badge
-                    variant="index"
-                    style={{
-                      backgroundColor: tagColor || 'var(--vellum-accent)',
-                      color: tagColor
-                        ? contrastTextColor(tagColor)
-                        : '#ffffff',
-                    }}
-                  >
-                    {index + 1}
-                  </Badge>
-                  {a.kind === 'comment' ? (
-                    <span className={styles.text}>{a.text}</span>
+              <section className={styles.pageGroup} key={page.route}>
+                <div className={styles.pageHeader}>
+                  {isCurrentPage ? (
+                    <div className={styles.pageTitle}>
+                      <span className={styles.currentPage}>Current page</span>
+                      <span className={styles.pageRoute} title={page.route}>
+                        {page.route}
+                      </span>
+                    </div>
                   ) : (
-                    <span className={clsx(styles.text, styles.cssEditText)}>
-                      <Pencil size={11} className={styles.cssEditIcon} />
-                      {summarizeCssEdits(a.edits)}
-                    </span>
+                    <button
+                      type="button"
+                      className={styles.pageLink}
+                      onClick={() => navigate(page.route)}
+                      aria-label={`Go to ${page.route}`}
+                    >
+                      <span className={styles.pageRoute} title={page.route}>
+                        {page.route}
+                      </span>
+                      <ExternalLink size={11} aria-hidden="true" />
+                    </button>
                   )}
-                </span>
-              </li>
+                  <span className={styles.pageCount}>
+                    {page.annotations.length}
+                  </span>
+                </div>
+                <ul className={styles.list}>
+                  {sortedAnnotations.map(a => {
+                    const number = annotationNumbers.get(a.id);
+                    const excluded = isExcludedByTagFilter(
+                      a,
+                      state.activeTagFilter,
+                    );
+                    const tagColor =
+                      a.kind === 'comment'
+                        ? resolveTagColor(tagColorMap, a)
+                        : null;
+                    const el = isCurrentPage
+                      ? (elementMap.get(a.id) ?? null)
+                      : null;
+                    const visibleOnPage = isCurrentPage && el !== null;
+                    const canEdit = visibleOnPage;
+                    const canNavigate = !isCurrentPage;
+                    const interactive = canEdit || canNavigate;
+
+                    return (
+                      <li
+                        key={`${page.route}:${a.id}`}
+                        role={interactive ? 'button' : undefined}
+                        tabIndex={!excluded && interactive ? 0 : undefined}
+                        aria-label={
+                          canNavigate
+                            ? `Open annotation ${number} on ${page.route}`
+                            : canEdit
+                              ? `Edit annotation ${number}`
+                              : undefined
+                        }
+                        onKeyDown={event => {
+                          if (
+                            event.target !== event.currentTarget ||
+                            excluded ||
+                            !interactive
+                          ) {
+                            return;
+                          }
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            if (canNavigate) navigate(page.route);
+                            else handleClick(a.id);
+                          }
+                        }}
+                        className={clsx(
+                          styles.item,
+                          isCurrentPage &&
+                            state.editingAnnotationId === a.id &&
+                            styles.active,
+                          excluded && styles.itemFiltered,
+                          isCurrentPage &&
+                            !visibleOnPage &&
+                            styles.itemNotVisible,
+                          canNavigate && styles.itemOtherPage,
+                        )}
+                        onPointerEnter={
+                          excluded || !visibleOnPage
+                            ? undefined
+                            : () => handleHover(a.id, true)
+                        }
+                        onPointerLeave={
+                          excluded || !visibleOnPage
+                            ? undefined
+                            : () => handleHover(a.id, false)
+                        }
+                        onClick={
+                          excluded || !interactive
+                            ? undefined
+                            : () => {
+                                if (canNavigate) navigate(page.route);
+                                else handleClick(a.id);
+                              }
+                        }
+                      >
+                        <span className={styles.selectorRow}>
+                          <span className={styles.selector}>
+                            {el
+                              ? describeElement(el, {
+                                  detail: 'medium',
+                                  filters: displayFilters,
+                                })
+                              : a.elementSelector}
+                          </span>
+                          {canNavigate && (
+                            <ExternalLink
+                              size={11}
+                              className={styles.rowLinkIcon}
+                              aria-hidden="true"
+                            />
+                          )}
+                        </span>
+                        <span className={styles.textRow}>
+                          <Badge
+                            variant="index"
+                            style={{
+                              backgroundColor:
+                                tagColor || 'var(--vellum-accent)',
+                              color: tagColor
+                                ? contrastTextColor(tagColor)
+                                : 'var(--vellum-text-on-color)',
+                            }}
+                          >
+                            {number}
+                          </Badge>
+                          {a.kind === 'comment' ? (
+                            <span className={styles.text}>{a.text}</span>
+                          ) : (
+                            <span
+                              className={clsx(
+                                styles.text,
+                                styles.cssEditText,
+                              )}
+                            >
+                              <Pencil
+                                size={11}
+                                className={styles.cssEditIcon}
+                              />
+                              {summarizeCssEdits(a.edits)}
+                            </span>
+                          )}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
             );
           })}
-        </ul>
+        </div>
       )}
     </>
   );

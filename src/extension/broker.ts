@@ -1,4 +1,12 @@
-import { CHANNEL, isRecord, STORAGE_KEYS, storageKey, validStoredValue } from './protocol';
+import {
+  ANNOTATION_PAGES_KEY,
+  annotationRouteFromStorageKey,
+  CHANNEL,
+  isRecord,
+  STORAGE_KEYS,
+  storageKey,
+  validStoredValue,
+} from './protocol';
 
 declare global {
   interface Window {
@@ -36,6 +44,18 @@ if (!window.__vellumBrokerInstalled) {
               values[key] = value;
             }
           }
+          const origin = new URL(url).origin;
+          const annotationPages: Record<string, unknown> = {};
+          const allStored = await chrome.storage.local.get(null);
+          for (const [key, value] of Object.entries(allStored)) {
+            const route = annotationRouteFromStorageKey(key, origin);
+            if (route === null) continue;
+            if (!validStoredValue('vellum-annotations', value)) {
+              throw new Error('Saved vellum-annotations data is invalid. It was not overwritten.');
+            }
+            if (Array.isArray(value) && value.length > 0) annotationPages[route] = value;
+          }
+          values[ANNOTATION_PAGES_KEY] = annotationPages;
           loadedPages.add(url);
           reply(values);
         } else if (message.operation === 'save') {

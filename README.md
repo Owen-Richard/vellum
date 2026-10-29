@@ -29,8 +29,8 @@ Open your browser's extension manager:
 Enable **Developer mode**, select **Load unpacked**, and choose this repository's
 `dist/` folder. Pin Vellum in the extension menu.
 
-Open an ordinary web page, select Vellum, and choose **Start Vellum**. Use the same
-menu to stop it. After reloading the page, start Vellum again.
+Open an ordinary web page and click the Vellum browser icon to start it.
+Click the icon again to stop it. After reloading the page, start Vellum again.
 
 `npm run package` produces `artifacts/vellum.zip` for manual distribution.
 Unzip it and load the extracted folder with **Load unpacked**. Vellum is not
@@ -47,7 +47,8 @@ been separately verified. This package does not support Firefox or Safari.
 - DOM layer tree on ordinary pages; React tree when React metadata is available.
 - Applied CSS editing, authored CSS rules, copyable diffs, and reset.
 - Draggable toolbar, keyboard shortcuts, dark/light themes, and component gallery.
-- Extension popup with ready, starting, active, blocked, and error states.
+- One-click start and stop from the browser icon, with no popup.
+- Startup errors appear in the icon tooltip with a `!` badge.
 - Visible save/copy failures. Failed copies never clear annotations.
 
 Stop restores CSS overrides and Vellum anchor names. The sidebar overlays the
@@ -117,8 +118,8 @@ npm run test:browser
 ```
 
 Browser checks use Playwright's Chromium in a separate temporary profile. They
-load the actual extension, trigger its browser action, and exercise the real
-popup and storage. They do not change your normal browser profile.
+load the actual extension, trigger its browser action, and exercise the
+one-click action and storage. They do not change your normal browser profile.
 
 To select an installed Microsoft Edge build that supports the test harness:
 

@@ -5,7 +5,7 @@ on:
 permissions:
   contents: read
 jobs:
-  check:
+  browser-check:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -38,3 +38,12 @@ jobs:
           path: |
             test-results/
             artifacts/states/
+  check:
+    needs: browser-check
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require both browser checks
+        env:
+          RESULT: ${{ needs.browser-check.result }}
+        run: test "$RESULT" = success

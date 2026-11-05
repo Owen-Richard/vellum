@@ -36,8 +36,21 @@ Click the icon again to stop it. After reloading the page, start Vellum again.
 Unzip it and load the extracted folder with **Load unpacked**. Vellum is not
 published to the Chrome Web Store or Microsoft Edge Add-ons.
 
-Automated browser checks run in Chromium. Other Chromium-based browsers have not
-been separately verified. This package does not support Firefox or Safari.
+Automated browser checks load the real extension in Chromium and Microsoft Edge.
+This package does not support Firefox or Safari.
+
+| Browser | Compatibility status |
+| --- | --- |
+| Playwright Chromium | Real extension flows tested |
+| Microsoft Edge | Real extension flows tested |
+| Google Chrome | Chromium target; branded Chrome not separately tested |
+| Brave, Opera, Vivaldi | Chromium-based; not separately tested |
+| Firefox | Not supported by this package; needs a Firefox background manifest and API verification |
+| Safari | Not supported by this package; needs a Safari Web Extension app and native packaging |
+
+Passing checks cover the tested builds and fixtures, not every browser version
+or website. Chromium 131 is the declared minimum, not a separately road-tested
+build. Mobile browsers are not supported.
 
 ## Features
 
@@ -66,7 +79,9 @@ page rather than changing the host layout.
 | `Escape` | Cancel selection |
 | `Ctrl` / `Cmd` + `Enter` | Save an annotation |
 
-Single-key shortcuts are ignored while typing in an input or editable region.
+Single-key shortcuts are ignored in inputs, textareas, select controls, and
+editable regions, including fields inside open shadow roots. Keys already
+handled by the host, composition events, and repeated keydown events are ignored.
 
 ## Storage and permissions
 
@@ -90,6 +105,10 @@ expose other origins, arbitrary extension storage keys, or extension APIs.
 - Browser-internal pages, extension stores, PDFs, and file URLs are not supported.
 - Inspection is limited to the top document. Cross-origin frames and closed
   shadow roots are not traversed.
+- Native HTML auto popovers can close when you click outside them, including
+  the Vellum toolbar. Press `S` to enter selection without clicking outside.
+  Host handlers already registered on window capture can also run before
+  Vellum's event isolation.
 - React names and source locations depend on metadata available in the page.
   Production bundles may not provide readable names or source maps.
 - Cross-origin stylesheets may not expose their authored rules to the page.
@@ -126,6 +145,22 @@ To select an installed Microsoft Edge build that supports the test harness:
 ```sh
 VELLUM_BROWSER=msedge npm run test:browser
 ```
+
+Install the Edge test browser with `npx playwright install msedge` if needed.
+Unlike the temporary test profile, this installs a browser on your machine.
+The extension test harness needs the browser's extension debugging protocol,
+which can require a newer build than Vellum's minimum browser version.
+
+The road tests cover SVG icon selection, host shortcuts and menus, CSS anchor
+restoration, DOM replacement, missing targets, save failure/retry, query/hash
+and history navigation, origin isolation, scrolling, viewport changes, and ten
+start/stop cycles. `tests/browser/extension.spec.ts` keeps this regression
+coverage. The tests use fresh storage and close all tabs after each case.
+
+`.github/workflows/check.yml` runs the suite separately in Chromium and Edge on
+Linux. Failed browser jobs retain traces and state captures. A local macOS
+road test on 2026-11-05 passed in Chromium 153.0.8010.12 and Edge 156.0.4314.58.
+Windows and other browser brands have not been separately road-tested here.
 
 Tests use a local example site, not private work pages. Captures go to
 `artifacts/states/`. After browser checks, `node scripts/state-board.mjs` creates

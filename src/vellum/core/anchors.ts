@@ -1,50 +1,68 @@
-const touched = new Map<HTMLElement, { value: string; priority: string }>();
+type AnchorState = {
+  value: string;
+  priority: string;
+  effectiveNames: string[];
+  addedNames: Set<string>;
+};
+const touched = new Map<HTMLElement, AnchorState>();
+
+function anchorNames(value: string): string[] {
+  return value.split(',').map(name => name.trim()).filter(name => name && name !== 'none');
+}
+
+function restoreAnchorNames(el: HTMLElement, remaining: string[], original: AnchorState) {
+  if (remaining.join(', ') === original.effectiveNames.join(', ')) {
+    if (original.value) el.style.setProperty('anchor-name', original.value, original.priority);
+    else el.style.removeProperty('anchor-name');
+  } else if (remaining.length) {
+    el.style.setProperty('anchor-name', remaining.join(', '), original.priority);
+  } else {
+    el.style.removeProperty('anchor-name');
+  }
+  touched.delete(el);
+}
 
 export function setAnchorName(el: HTMLElement, name: string): void {
-  const current = el.style.getPropertyValue('anchor-name');
+  const inline = el.style.getPropertyValue('anchor-name');
+  const names = anchorNames(inline || getComputedStyle(el).getPropertyValue('anchor-name'));
   if (!touched.has(el)) {
-    touched.set(el, { value: current, priority: el.style.getPropertyPriority('anchor-name') });
+    touched.set(el, {
+      value: inline,
+      priority: el.style.getPropertyPriority('anchor-name'),
+      effectiveNames: names.slice(),
+      addedNames: new Set(),
+    });
   }
-  const names = current
-    ? current
-        .split(',')
-        .map(n => n.trim())
-        .filter(n => n !== 'none' && n !== '')
-    : [];
 
   if (!names.includes(name)) {
     names.push(name);
+    touched.get(el)!.addedNames.add(name);
   }
 
-  el.style.setProperty('anchor-name', names.join(', '));
+  // Internal anchors must also work when the host stylesheet uses !important.
+  el.style.setProperty('anchor-name', names.join(', '), 'important');
 }
 
 export function clearVellumAnchors(): void {
   for (const [el, original] of touched) {
-    const remaining = el.style.getPropertyValue('anchor-name').split(',')
-      .map(name => name.trim()).filter(name => name && !name.startsWith('--vellum-'));
-    if (remaining.length) {
-      el.style.setProperty('anchor-name', remaining.join(', '), original.priority);
-    } else if (original.value) {
-      el.style.setProperty('anchor-name', original.value, original.priority);
-    } else {
-      el.style.removeProperty('anchor-name');
-    }
+    const remaining = anchorNames(el.style.getPropertyValue('anchor-name'))
+      .filter(name => !original.addedNames.has(name));
+    restoreAnchorNames(el, remaining, original);
   }
-  touched.clear();
 }
 
 export function removeAnchorName(el: HTMLElement, name: string): void {
   const current = el.style.getPropertyValue('anchor-name');
   if (!current) return;
 
-  const names = current
-    .split(',')
-    .map(n => n.trim())
-    .filter(n => n !== name && n !== '');
+  const names = anchorNames(current).filter(n => n !== name);
+  const original = touched.get(el);
+  original?.addedNames.delete(name);
 
-  if (names.length > 0) {
-    el.style.setProperty('anchor-name', names.join(', '));
+  if (original && !names.some(n => original.addedNames.has(n))) {
+    restoreAnchorNames(el, names, original);
+  } else if (names.length > 0) {
+    el.style.setProperty('anchor-name', names.join(', '), el.style.getPropertyPriority('anchor-name'));
   } else {
     el.style.removeProperty('anchor-name');
   }

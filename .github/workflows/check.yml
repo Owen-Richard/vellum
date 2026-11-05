@@ -7,6 +7,12 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, msedge]
+    env:
+      VELLUM_BROWSER: ${{ matrix.browser }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,10 +20,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: npm run check
       - run: npm run package
+        if: matrix.browser == 'chromium'
+      - run: unzip -t artifacts/vellum.zip
+        if: matrix.browser == 'chromium'
       - uses: actions/upload-artifact@v4
+        if: matrix.browser == 'chromium'
         with:
           name: vellum
           path: artifacts/vellum.zip
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-${{ matrix.browser }}
+          path: |
+            test-results/
+            artifacts/states/

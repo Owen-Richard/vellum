@@ -18,9 +18,10 @@ export function useHotkeys(state: VellumState, actions: VellumActions) {
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isTyping =
-        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      if (e.defaultPrevented || e.isComposing || e.repeat) return;
+      const isTyping = e.composedPath().some(target =>
+        target instanceof HTMLElement &&
+        (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target.isContentEditable));
 
       // Esc: exit/cancel selection mode (works even when typing in a text field)
       if (e.key === 'Escape' && stateRef.current.mode !== 'idle') {

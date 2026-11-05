@@ -5,11 +5,8 @@ import { setAnchorName, removeAnchorName } from '../core/anchors';
 /**
  * Element selection picker. While `mode === 'selecting'`, every pointer/click
  * on the page is consumed and routed through Vellum's selection flow. The only
- * element subtree allowed to behave normally is `[data-vellum-toolbar]` (so the
- * user can still click the toolbar to exit select mode).
- *
- * All other UI — including Vellum's own panels, popovers, and dialogs — is
- * selectable. Nothing else in the page receives clicks.
+ * element subtree allowed to behave normally is `[data-vellum]` (so the
+ * user can still use Vellum's controls to exit select mode).
  */
 export function useSelectionMode(
   state: VellumState,
@@ -37,8 +34,14 @@ export function useSelectionMode(
     const isExcluded = (el: HTMLElement | null) =>
       !!el?.closest?.('[data-vellum]');
 
+    const htmlTarget = (target: EventTarget | null): HTMLElement | null => {
+      let element = target instanceof Element ? target : null;
+      while (element && !(element instanceof HTMLElement)) element = element.parentElement;
+      return element instanceof HTMLElement ? element : null;
+    };
+
     const handleMove = (e: PointerEvent) => {
-      const target = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+      const target = htmlTarget(document.elementFromPoint(e.clientX, e.clientY));
       if (!target || isExcluded(target)) return;
 
       if (target !== prevHoveredRef.current) {
@@ -57,7 +60,7 @@ export function useSelectionMode(
       e.stopPropagation();
       e.stopImmediatePropagation();
 
-      const target = e.target instanceof HTMLElement ? e.target : null;
+      const target = htmlTarget(e.target);
       const el = target ?? prevHoveredRef.current;
       if (!el) return;
 
@@ -67,7 +70,7 @@ export function useSelectionMode(
       selectElementRef.current(el);
     };
 
-    // Swallow every pointer-down family event outside the toolbar so neither
+    // Swallow every pointer-down family event outside Vellum so neither
     // host-app dismiss handlers nor target elements' own onClick can fire.
     const blockEvent = (e: Event) => {
       if (isExcluded(e.target as HTMLElement | null)) return;
@@ -76,20 +79,20 @@ export function useSelectionMode(
       e.stopImmediatePropagation();
     };
 
-    document.addEventListener('pointermove', handleMove, true);
-    document.addEventListener('click', handleClick, true);
-    document.addEventListener('mousedown', blockEvent, true);
-    document.addEventListener('pointerdown', blockEvent, true);
-    document.addEventListener('touchstart', blockEvent, true);
-    document.addEventListener('contextmenu', blockEvent, true);
+    window.addEventListener('pointermove', handleMove, true);
+    window.addEventListener('click', handleClick, true);
+    window.addEventListener('mousedown', blockEvent, true);
+    window.addEventListener('pointerdown', blockEvent, true);
+    window.addEventListener('touchstart', blockEvent, true);
+    window.addEventListener('contextmenu', blockEvent, true);
 
     return () => {
-      document.removeEventListener('pointermove', handleMove, true);
-      document.removeEventListener('click', handleClick, true);
-      document.removeEventListener('mousedown', blockEvent, true);
-      document.removeEventListener('pointerdown', blockEvent, true);
-      document.removeEventListener('touchstart', blockEvent, true);
-      document.removeEventListener('contextmenu', blockEvent, true);
+      window.removeEventListener('pointermove', handleMove, true);
+      window.removeEventListener('click', handleClick, true);
+      window.removeEventListener('mousedown', blockEvent, true);
+      window.removeEventListener('pointerdown', blockEvent, true);
+      window.removeEventListener('touchstart', blockEvent, true);
+      window.removeEventListener('contextmenu', blockEvent, true);
       style.remove();
       if (prevHoveredRef.current) {
         removeAnchorName(prevHoveredRef.current, '--vellum-hover');

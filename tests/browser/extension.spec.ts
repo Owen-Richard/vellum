@@ -20,8 +20,12 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await context?.close(); });
 test.beforeEach(async () => {
+  await context.clearPermissions();
   const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
   await worker.evaluate(() => chrome.storage.local.clear());
+});
+test.afterEach(async () => {
+  await Promise.all(context.pages().map(page => page.close()));
 });
 
 async function clickAction(page: Page) {
@@ -304,4 +308,290 @@ test('route load failures stay visible and can be stopped without overwriting no
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
   expect(await worker.evaluate(async key => (await chrome.storage.local.get(key))[key], key)).toEqual([{ broken: true }]);
   await page.close();
+});
+
+test('selection of an SVG icon annotates its HTML control and survives reload', async () => {
+  const page = await startPage();
+  await page.getByTestId('review-action').evaluate(button => {
+    button.innerHTML = '<svg width="32" height="32" viewBox="0 0 32 32"><path d="M0 0h32v32H0z"/></svg> Review project';
+  });
+  await page.getByRole('button', { name: 'Select', exact: true }).click();
+  await page.getByTestId('review-action').locator('svg').click();
+  await page.getByPlaceholder('Add annotation...').fill('Review the icon button');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
+  await expect(page.locator('#click-count')).toHaveText('Host clicks: 0');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.reload();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
+});
+
+test('host select controls, shadow inputs and consumed keys do not trigger shortcuts', async () => {
+  const page = await startPage();
+  await page.evaluate(() => {
+    const select = document.createElement('select');
+    select.id = 'host-select';
+    select.innerHTML = '<option>High</option><option>Small</option>';
+    document.querySelector('main')!.append(select);
+    const host = document.createElement('div');
+    host.id = 'shadow-field';
+    host.attachShadow({ mode: 'open' }).innerHTML = '<input aria-label="Shadow input">';
+    document.querySelector('main')!.append(host);
+  });
+  await page.locator('#host-select').focus();
+  await page.keyboard.press('s');
+  await expect(page.locator('[data-vellum-selecting]')).toHaveCount(0);
+  await page.getByRole('textbox', { name: 'Shadow input' }).pressSequentially('schx/12');
+  await expect(page.locator('[data-vellum-selecting]')).toHaveCount(0);
+  for (const kind of ['consumed', 'composing', 'repeated']) {
+    await page.evaluate(kind => {
+      const event = new KeyboardEvent('keydown', {
+        key: 's', bubbles: true, cancelable: true,
+        isComposing: kind === 'composing', repeat: kind === 'repeated',
+      });
+      if (kind === 'consumed') event.preventDefault();
+      document.body.dispatchEvent(event);
+    }, kind);
+    await expect(page.locator('[data-vellum-selecting]')).toHaveCount(0);
+  }
+});
+
+test('host CSS anchors and inline importance survive selection and stop', async () => {
+  const page = await startPage();
+  await page.addStyleTag({ content: '#target { anchor-name: --host-action !important; }' });
+  await page.getByRole('button', { name: 'Select', exact: true }).click();
+  await page.getByTestId('review-action').hover();
+  await expect(page.getByTestId('review-action')).toHaveCSS('anchor-name', /--host-action/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('review-action')).toHaveCSS('anchor-name', '--host-action');
+  expect(await page.getByTestId('review-action').evaluate(button =>
+    (button as HTMLElement).style.getPropertyValue('anchor-name'))).toBe('');
+  await page.getByTestId('review-action').evaluate(button => {
+    (button as HTMLElement).style.setProperty('anchor-name', '--host-inline, --vellum-host', 'important');
+  });
+  await annotate(page, 'Keep host anchors');
+  expect(await page.getByTestId('review-action').evaluate(button =>
+    (button as HTMLElement).style.getPropertyPriority('anchor-name'))).toBe('important');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await expect(page.getByTestId('review-action')).toHaveCSS('anchor-name', '--host-inline, --vellum-host');
+  expect(await page.getByTestId('review-action').evaluate(button =>
+    (button as HTMLElement).style.getPropertyPriority('anchor-name'))).toBe('important');
+});
+
+test('DOM replacement reattaches notes and missing targets remain in the list', async () => {
+  const page = await startPage();
+  await annotate(page, 'Survive a DOM refresh');
+  await page.getByTestId('review-action').evaluate(button => {
+    const replacement = button.cloneNode(true) as HTMLElement;
+    replacement.removeAttribute('style');
+    button.replaceWith(replacement);
+  });
+  const marker = page.getByRole('button', { name: 'Annotation 1', exact: true });
+  await expect(marker).toBeVisible();
+  await expect.poll(() => page.getByTestId('review-action').evaluate(button =>
+    getComputedStyle(button).getPropertyValue('anchor-name'))).toContain('--vellum-dot-');
+  await marker.click();
+  await expect(page.getByPlaceholder('Add annotation...')).toHaveValue('Survive a DOM refresh');
+  await page.getByRole('button', { name: 'Update', exact: true }).click();
+  await page.getByTestId('review-action').evaluate(button => button.remove());
+  await expect(marker).toHaveCount(0);
+  await page.getByRole('button', { name: 'Show sidebar' }).click();
+  await expect(page.getByText('Survive a DOM refresh', { exact: true })).toBeVisible();
+});
+
+test('failed saves block stop, preserve notes and recover through Retry save', async () => {
+  const page = await startPage();
+  const worker = context.serviceWorkers()[0];
+  await worker.evaluate(async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id! },
+      func: () => {
+        const original = chrome.storage.local.set.bind(chrome.storage.local);
+        chrome.storage.local.set = async () => { throw new Error('Test: storage quota reached'); };
+        window.addEventListener('vellum-test-restore-storage', () => {
+          chrome.storage.local.set = original;
+        }, { once: true });
+      },
+    });
+  });
+  await annotate(page, 'Do not lose this note');
+  await expect(page.getByRole('alert')).toContainText('Not saved.');
+  await clickAction(page);
+  await expect.poll(actionTitle).toContain('not saved');
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('vellum-test-restore-storage')));
+  await page.getByRole('button', { name: 'Retry save', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.reload();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await page.getByRole('button', { name: 'Show sidebar' }).click();
+  await expect(page.getByText('Do not lose this note', { exact: true })).toBeVisible();
+});
+
+test('query, hash and history navigation isolate notes and flush pending saves', async () => {
+  const page = await startPage();
+  const original = page.url();
+  await annotate(page, 'Base route note');
+  await page.evaluate(() => history.pushState({}, '', '?review=1#details'));
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
+  await annotate(page, 'Query and hash note');
+  await page.evaluate(() => history.back());
+  await page.waitForURL(original);
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveAttribute('title', 'Base route note');
+  await page.evaluate(() => history.forward());
+  await page.waitForURL(`${original}?review=1#details`);
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveAttribute('title', 'Query and hash note');
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(1);
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await expect(page.locator('[data-vellum-selecting]')).toHaveCount(0);
+  await expect(page.getByTestId('review-action')).toHaveCSS('anchor-name', 'none');
+});
+
+test('saved toolbar positions remain on screen after resize and restart', async () => {
+  const worker = context.serviceWorkers()[0];
+  await worker.evaluate(async key => {
+    await chrome.storage.local.set({
+      [key]: { anchor: { v: 'top', h: 'left' }, offset: { x: 3000, y: 3000 } },
+    });
+  }, storageKey('http://127.0.0.1:5198/fixture', 'vellum-toolbar-pos'));
+  const page = await startPage();
+  const toolbar = page.locator('[data-vellum-toolbar]');
+  async function expectInViewport() {
+    await expect.poll(async () => toolbar.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return rect.left >= 0 && rect.top >= 0 &&
+        rect.right <= innerWidth && rect.bottom <= innerHeight;
+    })).toBe(true);
+  }
+  await expectInViewport();
+  await page.setViewportSize({ width: 800, height: 600 });
+  await expectInViewport();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expectInViewport();
+});
+
+test('markers stay aligned while scrolling and resizing the host page', async () => {
+  const page = await startPage();
+  await page.addStyleTag({ content: 'body { min-height: 2500px; } main { margin-top: 500px; }' });
+  await annotate(page, 'Scroll with the target');
+  const marker = page.getByRole('button', { name: 'Annotation 1', exact: true });
+  async function expectAligned() {
+    await expect.poll(async () => {
+      const dot = await marker.boundingBox();
+      const target = await page.getByTestId('review-action').boundingBox();
+      if (!dot || !target) return false;
+      return Math.abs(dot.x + dot.width / 2 - target.x - target.width) < 1 &&
+        Math.abs(dot.y + dot.height / 2 - target.y) < 1;
+    }).toBe(true);
+  }
+  await expectAligned();
+  await page.evaluate(() => scrollBy(0, 100));
+  await expectAligned();
+  await page.setViewportSize({ width: 900, height: 700 });
+  await expectAligned();
+});
+
+test('repeated start and stop restores focus and keyboard selection preserves native popovers', async () => {
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:5198/fixture');
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  for (let cycle = 0; cycle < 10; cycle++) {
+    await page.locator('#host-popover').evaluate(element => (element as HTMLElement).hidePopover());
+    await page.locator('#host-input').focus();
+    await clickAction(page);
+    await expect.poll(actionTitle).toBe('Stop Vellum');
+    await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(1);
+    await page.getByRole('button', { name: 'Host popover', exact: true }).click();
+    await expect(page.locator('#host-popover')).toBeVisible();
+    await page.keyboard.press('s');
+    await expect(page.locator('#host-popover')).toBeVisible();
+    await page.getByTestId('review-action').hover();
+    await clickAction(page);
+    await expect.poll(actionTitle).toBe('Start Vellum');
+    await expect(page.locator('[data-vellum-extension-root], [data-vellum-selecting]')).toHaveCount(0);
+    await expect(page.getByTestId('review-action')).toHaveCSS('anchor-name', 'none');
+    await expect(page.locator('#host-input')).toBeFocused();
+  }
+  await page.getByTestId('review-action').click();
+  await expect(page.locator('#click-count')).toHaveText('Host clicks: 1');
+  expect(errors).toEqual([]);
+});
+
+test('toolbar interaction is isolated from earlier host document dismiss handlers', async () => {
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:5198/fixture');
+  await page.evaluate(() => {
+    const menu = document.createElement('aside');
+    menu.id = 'host-menu';
+    menu.textContent = 'Host menu stays open';
+    document.body.append(menu);
+    const dismiss = (event: Event) => {
+      if (event.target instanceof Node && !menu.contains(event.target)) menu.hidden = true;
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    document.addEventListener('click', dismiss, true);
+  });
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await page.getByRole('button', { name: 'Select', exact: true }).click();
+  await expect(page.locator('#host-menu')).toBeVisible();
+  await page.getByTestId('review-action').click();
+  await expect(page.locator('#host-menu')).toBeVisible();
+  await expect(page.locator('#click-count')).toHaveText('Host clicks: 0');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.getByTestId('review-action').click();
+  await expect(page.locator('#host-menu')).toBeHidden();
+  await expect(page.locator('#click-count')).toHaveText('Host clicks: 1');
+});
+
+test('settings persist on the same origin without leaking into a different origin', async () => {
+  const page = await startPage();
+  await annotate(page, 'Only this origin');
+  await page.getByRole('button', { name: 'Toggle settings' }).click();
+  await page.getByRole('button', { name: 'Toggle theme' }).click();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.goto('http://127.0.0.1:5198/other');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveAttribute('data-vellum-theme', 'light');
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.goto('http://localhost:5198/fixture');
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveAttribute('data-vellum-theme', 'dark');
+  await page.getByRole('button', { name: 'Show sidebar' }).click();
+  await expect(page.getByText('No annotations yet.')).toBeVisible();
+  await expect(page.getByText('Only this origin', { exact: true })).toHaveCount(0);
+});
+
+test('missing browser features produce a clear startup error without partial UI', async () => {
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:5198/fixture');
+  await page.evaluate(() => {
+    const supports = CSS.supports.bind(CSS);
+    CSS.supports = (property: string, value?: string) => property === 'anchor-name'
+      ? false : value === undefined ? supports(property) : supports(property, value);
+  });
+  await clickAction(page);
+  await expect.poll(actionTitle).toContain('HTML popover and CSS anchor support');
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
+  await page.getByTestId('review-action').click();
+  await expect(page.locator('#click-count')).toHaveText('Host clicks: 1');
 });

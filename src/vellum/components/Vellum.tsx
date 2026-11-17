@@ -44,6 +44,7 @@ function OverlayInner({ className }: OverlayInnerProps) {
 }
 
 export interface VellumProps {
+  initialSidebarVisible?: boolean;
   className?: string;
   filters?: VellumFilter[];
   /**
@@ -59,9 +60,9 @@ export interface VellumProps {
   navigate: (route: string) => void;
 }
 
-export function Vellum({ className, filters, pathname, navigate }: VellumProps) {
+export function Vellum({ className, filters, pathname, navigate, initialSidebarVisible }: VellumProps) {
   return (
-    <VellumProvider filters={filters} pathname={pathname} navigate={navigate}>
+    <VellumProvider filters={filters} pathname={pathname} navigate={navigate} initialSidebarVisible={initialSidebarVisible}>
       <OverlayInner className={className} />
     </VellumProvider>
   );

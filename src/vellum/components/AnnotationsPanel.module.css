@@ -205,3 +205,10 @@
   align-items: center;
   gap: 6px;
 }
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 10px 4px;
+  flex-shrink: 0;
+}

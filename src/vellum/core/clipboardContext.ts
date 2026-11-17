@@ -42,8 +42,9 @@ export async function formatAnnotationForClipboard(
   a: Annotation,
   filters: ComposedFilters = IDENTITY_FILTERS,
   tags: AnnotationTag[] = [],
+  resolveElement = true,
 ): Promise<string> {
-  const el = findElementBySelector(a.elementSelector);
+  const el = resolveElement ? findElementBySelector(a.elementSelector) : null;
   if (a.kind === 'css-edit') {
     // Selector for the diff block header. Use `describeElement` so we get
     // the same tag.class.class form the panel and annotation list use, not
@@ -72,9 +73,10 @@ export async function clipboardContext(
   annotations: Annotation[],
   filters: ComposedFilters = IDENTITY_FILTERS,
   tags: AnnotationTag[] = [],
+  resolveElements = true,
 ): Promise<string> {
   const blocks = await Promise.all(
-    annotations.map(a => formatAnnotationForClipboard(a, filters, tags)),
+    annotations.map(a => formatAnnotationForClipboard(a, filters, tags, resolveElements)),
   );
   return blocks.join('\n\n---\n\n');
 }

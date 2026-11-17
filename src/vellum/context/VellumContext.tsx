@@ -81,6 +81,7 @@ export function VellumProvider({
   filters = [],
   pathname,
   navigate,
+  initialSidebarVisible = false,
 }: {
   children: ReactNode;
   filters?: VellumFilter[];
@@ -88,6 +89,7 @@ export function VellumProvider({
   pathname: string;
   /** Host-app navigation handler — receives a previously-captured pathname. */
   navigate: (route: string) => void;
+  initialSidebarVisible?: boolean;
 }) {
   const { fiberRoot, treeRevision } = useFiberRoot();
   const composedFilters = useMemo(() => composeFilters(filters), [filters]);
@@ -140,7 +142,7 @@ export function VellumProvider({
     annotations: savedAnnotations,
     tags: mergedTags,
     activeTagFilter: [],
-    sidebarVisible: false,
+    sidebarVisible: initialSidebarVisible,
     sidebarTab: 'annotations',
     dotsVisible: true,
     settingsVisible: false,

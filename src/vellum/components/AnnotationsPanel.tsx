@@ -1,9 +1,11 @@
-import { useMemo, useRef, useEffect, type CSSProperties } from 'react';
+import { useMemo, useRef, useEffect, useState, type CSSProperties } from 'react';
 import clsx from 'clsx';
-import { Pencil, ExternalLink } from 'lucide-react';
+import { Pencil, ExternalLink, ClipboardCopy } from 'lucide-react';
 import { useVellum } from '../context/VellumContext';
 import { useAnnotationInteraction } from '../hooks/useAnnotationInteraction';
-import { Badge } from '../common';
+import { Badge, Button } from '../common';
+import { clipboardContext } from '../core/clipboardContext';
+import { copyText, reportError } from '../../extension/storage';
 import { removeAnchorName } from '../core/anchors';
 import { findElementBySelector } from '../core/selectors';
 import { describeElement } from '../core/describeElement';
@@ -55,8 +57,15 @@ export function AnnotationsPanel() {
     pathname,
     navigate,
     annotationPages,
+    composedFilters,
   } = useVellum();
   const { handleHover, handleClick } = useAnnotationInteraction();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 1400);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   // Keep a ref to the latest hovered element so the unmount cleanup can access it
   const hoveredRef = useRef<HTMLElement | null>(null);
@@ -111,6 +120,20 @@ export function AnnotationsPanel() {
     [annotationPages, pathname],
   );
 
+  async function copyAll() {
+    try {
+      const blocks = await Promise.all(sortedPages.map(async page =>
+        `## ${page.route}\n\n${await clipboardContext(
+          page.annotations, composedFilters, state.tags, page.route === pathname,
+        )}`,
+      ));
+      await copyText(blocks.join('\n\n---\n\n'));
+      setCopied(true);
+    } catch (cause) {
+      reportError(cause instanceof Error ? cause.message : 'Could not copy all annotations.');
+    }
+  }
+
   // Map of annotation id -> resolved anchor element (or null when not on page).
   // Recomputed when annotations change, the route changes, or the fiber tree updates.
   // pathname & treeRevision intentionally included to retrigger DOM lookups.
@@ -124,6 +147,13 @@ export function AnnotationsPanel() {
 
   return (
     <>
+      <div className={styles.actions}>
+        <Button size="sm" variant="ghost" onClick={() => { void copyAll(); }}
+          disabled={annotationPages.length === 0} aria-label="Copy all annotations as markdown">
+          <ClipboardCopy size={12} aria-hidden="true" />
+          {copied ? 'Copied!' : 'Copy all'}
+        </Button>
+      </div>
       {showFilterBar && (
         <div className={styles.filterBar}>
           <FilterPill

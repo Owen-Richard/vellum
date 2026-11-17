@@ -12,7 +12,7 @@ declare global {
   interface Window {
     __vellumExtension?: {
       active: boolean;
-      start: () => Promise<void>;
+      start: (showSidebar?: boolean) => Promise<void>;
       stop: () => Promise<void>;
     };
   }
@@ -62,7 +62,7 @@ if (!window.__vellumExtension) {
     clearVellumAnchors();
   }
 
-  function mount(requiresRestart = false) {
+  function mount(requiresRestart = false, showSidebar = false) {
     container = document.createElement('div');
     container.setAttribute('data-vellum-extension-root', '');
     container.setAttribute('data-vellum', '');
@@ -70,7 +70,7 @@ if (!window.__vellumExtension) {
     document.body.append(container);
     root = createRoot(container);
     flushSync(() => root?.render(<ErrorBoundary>
-      {!requiresRestart && <Vellum pathname={pagePath(currentUrl)} navigate={route => {
+      {!requiresRestart && <Vellum initialSidebarVisible={showSidebar} pathname={pagePath(currentUrl)} navigate={route => {
         const next = new URL(route, location.href);
         if (next.origin !== location.origin) {
           reportError('Vellum navigation must stay on the current site.');
@@ -90,7 +90,7 @@ if (!window.__vellumExtension) {
 
   const runtime = {
     active: false,
-    start: () => serialized(async () => {
+    start: (showSidebar = false) => serialized(async () => {
       if (runtime.active) return;
       if (document.querySelector('[data-vellum]')) {
         throw new Error('This page already contains Vellum. Disable the embedded instance first.');
@@ -102,17 +102,18 @@ if (!window.__vellumExtension) {
       focusBefore = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       currentUrl = location.href;
       await loadStorage(currentUrl);
-      mount();
+      mount(false, showSidebar);
       runtime.active = true;
       routeTimer = setInterval(() => {
         if (location.href === currentUrl || task) return;
         void serialized(async () => {
           await flushStorage();
           const nextUrl = location.href;
+          const sidebarVisible = container?.hasAttribute('data-vellum-sidebar-open') ?? false;
           unmount();
           await loadStorage(nextUrl);
           currentUrl = nextUrl;
-          mount();
+          mount(false, sidebarVisible);
         }).catch(cause => {
           reportError(String(cause));
           if (!container) {

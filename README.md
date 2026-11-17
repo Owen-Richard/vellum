@@ -30,7 +30,9 @@ Enable **Developer mode**, select **Load unpacked**, and choose this repository'
 `dist/` folder. Pin Vellum in the extension menu.
 
 Open an ordinary web page and click the Vellum browser icon to start it.
-Click the icon again to stop it. After reloading the page, start Vellum again.
+Click the icon again to stop it. Vellum stays active after reloads and same-site
+page navigation, with the annotation list open. Moving to a different origin
+ends the active session; click the icon to start Vellum on that site.
 
 `npm run package` produces `artifacts/vellum.zip` for manual distribution.
 Unzip it and load the extracted folder with **Load unpacked**. Vellum is not
@@ -57,6 +59,8 @@ build. Mobile browsers are not supported.
 - Element selection and annotation markers.
 - Create, edit, delete, tag, and filter annotations.
 - Copy feedback with element and available React component context.
+- Copy all saved site annotations from the list, grouped by page, without
+  clearing notes. Other pages use saved selectors rather than the current DOM.
 - DOM layer tree on ordinary pages; React tree when React metadata is available.
 - Applied CSS editing, authored CSS rules, copyable diffs, and reset.
 - Draggable toolbar, keyboard shortcuts, dark/light themes, and component gallery.

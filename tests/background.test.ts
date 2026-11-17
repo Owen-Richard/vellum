@@ -14,6 +14,8 @@ test('browser action handles delayed tab grants without hiding startup errors', 
 
   globalThis.chrome = {
     runtime: { onInstalled: { addListener() {} } },
+    tabs: { onUpdated: { addListener() {} }, onRemoved: { addListener() {} } },
+    storage: { session: { async set() {}, async remove() {} } },
     action: {
       onClicked: { addListener(listener: typeof onClick) { onClick = listener; } },
       async setBadgeText({ text }: { text: string }) { badge = text; },

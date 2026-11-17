@@ -109,17 +109,77 @@ test('notes survive reload, remain page-scoped and navigate from the site list',
   await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
   await page.locator('#navigate').click();
   await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Show sidebar' }).click();
+  await expect(page.getByRole('button', { name: 'Hide sidebar' })).toBeVisible();
   await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
   await expect(page.getByText('/fixture', { exact: true })).toBeVisible();
   await captureState(page, '05-annotations-cross-page');
   await page.getByRole('button', { name: 'Open annotation 1 on /fixture' }).click();
   await page.waitForURL(originalUrl);
+  await expect(page.getByRole('button', { name: 'Hide sidebar' })).toBeVisible();
+  await expect.poll(actionTitle).toBe('Stop Vellum');
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
+  await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Hide sidebar' })).toBeVisible();
+  await expect(page.getByText('Persistent page feedback', { exact: true })).toBeVisible();
+  await clickAction(page);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  await page.reload();
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
+  await page.close();
+});
+
+test('list copy all groups site notes without using another page DOM or clearing notes', async () => {
+  const page = await startPage();
+  await annotate(page, 'First page feedback');
+  await page.locator('#navigate').click();
+  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toHaveCount(0);
+  await annotate(page, 'Second page feedback');
+  await page.getByRole('button', { name: 'Show sidebar' }).click();
+  await page.getByRole('button', { name: 'Toggle settings' }).click();
+  await page.getByLabel('Clear on copy').check();
+  await page.getByRole('button', { name: 'Toggle settings' }).click();
+  // The same selector on both fixture routes must not resolve off-page notes here.
+  await page.getByTestId('review-action').evaluate(el => { el.textContent = 'Only on second page'; });
+  await page.getByRole('button', { name: 'Copy all annotations as markdown' }).click();
+  await expect(page.getByRole('button', { name: 'Copy all annotations as markdown' })).toHaveText('Copied!');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:5198' });
+  const clipboard = await page.evaluate(() => navigator.clipboard.readText());
+  expect(clipboard).toContain('## /fixture');
+  expect(clipboard).toContain('## /other');
+  expect(clipboard).toContain('First page feedback');
+  expect(clipboard).toContain('Second page feedback');
+  expect(clipboard.split('## /fixture')[1]).not.toContain('Only on second page');
+  await expect(page.getByText('First page feedback', { exact: true })).toBeVisible();
+  await expect(page.getByText('Second page feedback', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copy all annotations as markdown' })).toHaveText('Copy all');
+  await captureState(page, '05b-multipage-copy-all');
+  await page.screenshot({ path: 'artifacts/multipage-copy-all.png' });
+  await page.evaluate(() => {
+    Object.defineProperty(navigator.clipboard, 'writeText', {
+      configurable: true, value: () => Promise.reject(new Error('Test: clipboard denied')),
+    });
+  });
+  await page.getByRole('button', { name: 'Copy all annotations as markdown' }).click();
+  await expect(page.getByRole('alert')).toContainText('Could not copy');
+  await expect(page.getByText('First page feedback', { exact: true })).toBeVisible();
+  await expect(page.getByText('Second page feedback', { exact: true })).toBeVisible();
+});
+
+test('active navigation does not carry Vellum across origins or restart it on return', async () => {
+  const page = await startPage();
+  await page.goto('http://localhost:5198/fixture');
+  await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
+  await expect.poll(actionTitle).toBe('Start Vellum');
+  const worker = context.serviceWorkers()[0];
+  await expect.poll(() => worker.evaluate(async () =>
+    Object.keys(await chrome.storage.session.get(null)).filter(key => key.startsWith('vellum-active:')).length,
+  )).toBe(0);
+  await page.goto('http://127.0.0.1:5198/fixture');
   await expect(page.locator('[data-vellum-extension-root]')).toHaveCount(0);
   await clickAction(page);
   await expect.poll(actionTitle).toBe('Stop Vellum');
-  await expect(page.getByRole('button', { name: 'Annotation 1', exact: true })).toBeVisible();
-  await page.close();
+  await expect(page.getByRole('button', { name: 'Select', exact: true })).toBeVisible();
 });
 
 test('DOM editor applies, resets and restores CSS when stopped', async () => {

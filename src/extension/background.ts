@@ -5,6 +5,34 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 const pending = new Set<number>();
+const activeKey = (tabId: number) => `vellum-active:${tabId}`;
+
+chrome.tabs.onRemoved.addListener(tabId => {
+  void chrome.storage.session.remove(activeKey(tabId));
+});
+
+chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
+  if (change.status !== 'complete' || pending.has(tabId)) return;
+  pending.add(tabId);
+  void (async () => {
+    const key = activeKey(tabId);
+    const saved = (await chrome.storage.session.get(key))[key];
+    if (typeof saved !== 'string') return;
+    if (!tab.url || !supportedUrl(tab.url) || new URL(tab.url).origin !== saved) {
+      await chrome.storage.session.remove(key);
+      await chrome.action.setBadgeText({ tabId, text: '' });
+      await chrome.action.setTitle({ tabId, title: 'Start Vellum' });
+      return;
+    }
+    if (!(await isActive(tabId))) await toggle(tabId, tab.url, true);
+  })().catch(async cause => {
+    console.error('[Vellum] Could not restore Vellum:', cause);
+    await chrome.action.setBadgeText({ tabId, text: '!' });
+    await chrome.action.setBadgeBackgroundColor({ tabId, color: '#b91c1c' });
+    await chrome.action.setTitle({ tabId, title: `Vellum: Could not restore Vellum. ${String(cause)}` });
+  })
+    .finally(() => pending.delete(tabId));
+});
 
 async function isActive(tabId: number) {
   for (let attempt = 0; ; attempt++) {
@@ -32,7 +60,7 @@ chrome.action.onClicked.addListener(tab => {
   }).finally(() => pending.delete(tabId));
 });
 
-async function toggle(tabId: number, url?: string) {
+async function toggle(tabId: number, url?: string, resume = false) {
   let active = false;
   try {
     if (!url || !supportedUrl(url)) {
@@ -49,6 +77,7 @@ async function toggle(tabId: number, url?: string) {
       });
       if (!result.result?.ok) throw new Error(result.result?.error ?? 'Could not stop Vellum.');
       await chrome.scripting.removeCSS({ target: { tabId }, files: ['page.css'] });
+      await chrome.storage.session.remove(activeKey(tabId));
       active = false;
     } else {
       await chrome.scripting.executeScript({ target: { tabId }, files: ['broker.js'] });
@@ -56,13 +85,15 @@ async function toggle(tabId: number, url?: string) {
       await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', files: ['page.js'] });
       const [result] = await chrome.scripting.executeScript({
         target: { tabId }, world: 'MAIN',
-        func: async () => {
-          try { await window.__vellumExtension?.start(); return { ok: Boolean(window.__vellumExtension?.active) }; }
+        args: [resume],
+        func: async (showSidebar: boolean) => {
+          try { await window.__vellumExtension?.start(showSidebar); return { ok: Boolean(window.__vellumExtension?.active) }; }
           catch (error) { return { ok: false, error: String(error) }; }
         },
       });
       if (!result.result?.ok) throw new Error(result.result?.error ?? 'Vellum did not start.');
       active = true;
+      await chrome.storage.session.set({ [activeKey(tabId)]: new URL(url).origin });
     }
     await chrome.action.setBadgeText({ tabId, text: '' });
     await chrome.action.setTitle({ tabId, title: active ? 'Stop Vellum' : 'Start Vellum' });

@@ -62,6 +62,7 @@ chrome.action.onClicked.addListener(tab => {
 
 async function toggle(tabId: number, url?: string, resume = false) {
   let active = false;
+  let stylesInjected = false;
   try {
     if (!url || !supportedUrl(url)) {
       throw new Error('Open a regular http or https page. Browser settings and extension stores are blocked.');
@@ -82,6 +83,7 @@ async function toggle(tabId: number, url?: string, resume = false) {
     } else {
       await chrome.scripting.executeScript({ target: { tabId }, files: ['broker.js'] });
       await chrome.scripting.insertCSS({ target: { tabId }, files: ['page.css'] });
+      stylesInjected = true;
       await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', files: ['page.js'] });
       const [result] = await chrome.scripting.executeScript({
         target: { tabId }, world: 'MAIN',
@@ -98,7 +100,7 @@ async function toggle(tabId: number, url?: string, resume = false) {
     await chrome.action.setBadgeText({ tabId, text: '' });
     await chrome.action.setTitle({ tabId, title: active ? 'Stop Vellum' : 'Start Vellum' });
   } catch (cause) {
-    if (!active) {
+    if (!active && stylesInjected) {
       try {
         await chrome.scripting.removeCSS({ target: { tabId }, files: ['page.css'] });
       } catch (cleanupError) {

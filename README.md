@@ -38,6 +38,11 @@ ends the active session; click the icon to start Vellum on that site.
 Unzip it and load the extracted folder with **Load unpacked**. Vellum is not
 published to the Chrome Web Store or Microsoft Edge Add-ons.
 
+`npm run build:playground` builds a web playground in `artifacts/playground/`.
+It runs the same extension code on a sample two-page site, with notes saved in
+the page's local storage instead of extension storage. Use it to share Vellum as
+a link. It needs a static host that serves `index.html` for unknown paths.
+
 Automated browser checks load the real extension in Chromium and Microsoft Edge.
 This package does not support Firefox or Safari.
 
